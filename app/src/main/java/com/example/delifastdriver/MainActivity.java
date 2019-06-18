@@ -1,13 +1,13 @@
 package com.example.delifastdriver;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -27,7 +27,10 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.delifastdriver.DataParser.DataParser;
+import com.example.delifastdriver.API.Urls;
+import com.example.delifastdriver.Modules.DirectionFinder;
+import com.example.delifastdriver.Modules.DirectionFinderListener;
+import com.example.delifastdriver.Modules.Route;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -37,24 +40,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener {
 
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
@@ -63,6 +62,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     EditText source_location,destination_location;
     TextView txtFare,txtcustomer_name;
     ImageButton btncall;
+
+
+    private List<Marker> originMarkers = new ArrayList<>();
+    private List<Marker> destinationMarker = new ArrayList<>();
+    private List<Polyline> polyLinePaths = new ArrayList<>();
+    private ProgressDialog progressDialog;
+    String pacakge;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         loadDeliveryRoute();
 
 
+
+
         btncall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,7 +118,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                update_package();
                 finish();
+
+
             }
         });
 
@@ -119,10 +131,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void loadDeliveryRoute() {
 
-        String ApiUrls = "http://206.81.0.212/api/packages/1/";
 
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, ApiUrls,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.ApiUrls,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -143,7 +154,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             String distance = obj.getString("distance");
 
 
-
                             Log.e("id:", package_id);
                             Log.e("receiver_phone:", receiver_phone);
                             Log.e("pickup_name:", pickup_name);
@@ -153,10 +163,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             to=pickup_name;
                             from=receiver_phone;
 
-                            destination_location.setText(dropoff_name);
-                            source_location.setText(pickup_name);
+                            destination_location.setText(dropoff_name +", kenya");
+                            source_location.setText(pickup_name+ ", kenya");
                             txtFare.setText("Ksh "+amount);
                             txtcustomer_name.setText("Package: "+title +"\n Receiver: "+receiver_phone+" \nDistance: "+distance +"km");
+
+                            pacakge=title;
 
 
                         } catch (JSONException e) {
@@ -172,110 +184,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 });
 
+
+
         //creating a request queue
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
         //adding the string request to request queue
         requestQueue.add(stringRequest);
 
-    }
+        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
 
+            @Override
+            public void onRequestFinished(Request<Object> request) {
+               sendRequest();
 
-    private String getUrl(LatLng origin, LatLng dest) {
-
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-
-
-        return url;
-    }
-
-
-    // Fetches data from url passed
-    private class FetchUrl extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try {
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-                Log.e("Background Task data", data.toString());
-            } catch (Exception e) {
-                Log.e("Background Task", e.toString());
             }
-            return data;
-        }
+        });
 
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-
-        }
     }
 
 
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
 
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-            Log.e("downloadUrl", data.toString());
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
 
 
     @Override
@@ -289,219 +218,151 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final Geocoder geocoder = new Geocoder(this);
 
 
-        if (markerPoints.size() > 1) {
-                    markerPoints.clear();
-                    mMap.clear();
-                }
 
-        new CountDownTimer(3000, 1000) {
-            public void onFinish() {
-                // When timer is finished
-                // Execute your code here
+        int reqCode = 1;
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
 
-                List<Address> addresses = null;
-                try {
-                    addresses = geocoder.getFromLocationName(source_location.getText().toString() +" kenya", 1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (addresses.size() > 0) {
-                    double latitude = addresses.get(0).getLatitude();
-                    double longitude = addresses.get(0).getLongitude();
-
-                    mp.position(new LatLng(latitude, longitude));
-
-                    Log.e("From", "inserted latitude " + latitude + ", inserted Longitude " + longitude);
-
-                    mp.title("From location");
-                    CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(latitude, longitude));
-                    mMap.addMarker(mp);
-                    mMap.moveCamera(center);
-                    mMap.animateCamera(zoom);
-
-
-//                    Marker m1 = mMap.addMarker(new MarkerOptions()
-//
-//                            .position(new LatLng(latitude, longitude))
-//                            .anchor(0.5f, 0.5f)
-//                            .title("From")
-//                            .snippet("Package Delivery From"));
-//                             mMap.animateCamera(zoom);
-
-
-                }
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, reqCode);
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
 
 
 
-
-                List<Address> addresses2 = null;
-                try {
-                    addresses2 = geocoder.getFromLocationName(destination_location.getText().toString() +" kenya", 1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (addresses2.size() > 0) {
-                    double latitude2 = addresses2.get(0).getLatitude();
-                    double longitude2 = addresses2.get(0).getLongitude();
-
-//                    mp2.position(new LatLng(latitude2, longitude2));
-//
-//                    Log.e("To", " latitude " + latitude2 + ", inserted Longitude " + longitude2);
-//
-//                    mp2.title("Drop off location");
-//                    CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(latitude2, longitude2));
-//                    mMap.clear();
-//                    mMap.addMarker(mp2);
-//                    mMap.moveCamera(center);
-//                    mMap.animateCamera(zoom);
-
-
-                    Marker m2 = mMap.addMarker(new MarkerOptions()
-                            .position(new LatLng(latitude2, longitude2))
-                            .anchor(0.5f, 0.5f)
-                            .title("To")
-                            .snippet("Package Delivery to"));
-
-
-                }
-            }
-
-            public void onTick(long millisUntilFinished) {
-                // millisUntilFinished    The amount of time until finished.
-            }
-        }.start();
-
-
-
-
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//
-//            @Override
-//            public void onMapClick(LatLng point) {
-//
-//                // Already two locations
-//                if (markerPoints.size() > 1) {
-//                    markerPoints.clear();
-//                    mMap.clear();
-//                }
-//
-//                // Adding new item to the ArrayList
-//                markerPoints.add(point);
-//
-//                // Creating MarkerOptions
-//                MarkerOptions options = new MarkerOptions();
-//
-//                // Setting the position of the marker
-//                options.position(point);
-//
-//                /**
-//                 * For the start location, the color of marker is GREEN and
-//                 * for the end location, the color of marker is RED.
-//                 */
-//                if (markerPoints.size() == 1) {
-//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//                } else if (markerPoints.size() == 2) {
-//                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-//                }
-//
-//
-//                // Add new marker to the Google Map Android API V2
-//                mMap.addMarker(options);
-//
-//                // Checks, whether start and end locations are captured
-//                if (markerPoints.size() >= 2) {
-//                    LatLng origin = markerPoints.get(0);
-//                    LatLng dest = markerPoints.get(1);
-//
-//                    // Getting URL to the Google Directions API
-//                    String url = getUrl(origin, dest);
-//                    Log.d("onMapClick", url.toString());
-//                    FetchUrl FetchUrl = new FetchUrl();
-//
-//                    // Start downloading json data from Google Directions API
-//                    FetchUrl.execute(url);
-//                    //move map camera
-//                    mMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-//                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-//                }
-//
-//            }
-//        });
 
 
     }
 
 
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+    private void sendRequest() {
+        String origin = source_location.getText().toString();
+        String destination = destination_location.getText().toString();
 
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask", jsonData[0].toString());
-                DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-                Log.d("ParserTask", "Executing routes");
-                Log.d("ParserTask", routes.toString());
-
-            } catch (Exception e) {
-                Log.d("ParserTask", e.toString());
-                e.printStackTrace();
-            }
-            return routes;
+        if (origin.isEmpty()) {
+            Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
+            return;
         }
+        if (destination.isEmpty()){
+            Toast.makeText(this, "Please enter destination!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            new DirectionFinder(this, origin, destination).execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
 
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
 
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
 
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
+    private void update_package(){
 
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-                    points.add(position);
+        String url = "http://206.81.0.212/api/packages/1/";
+
+        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
+                new Response.Listener<String>()
+                {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
                 }
+        ) {
 
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(Color.RED);
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String> params = new HashMap<String, String> ();
+                params.put("status", "Delivered");
 
-                Log.d("onPostExecute", "onPostExecute lineoptions decoded");
-
+                return params;
             }
 
-            // Drawing polyline in the Google Map for the i-th route
-            if (lineOptions != null) {
-                mMap.addPolyline(lineOptions);
-            } else {
-                Log.d("onPostExecute", "without Polylines drawn");
+        };
+
+        queue.add(putRequest);
+    }
+
+    @Override
+    public void onDirectionFinderStart() {
+
+        progressDialog = ProgressDialog.show(this, "Please wait", "Finding direction", true);
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
+                marker.remove();
+            }
+        }
+        if (destinationMarker != null) {
+            for (Marker marker : destinationMarker) {
+                marker.remove();
+            }
+        }
+        if (polyLinePaths != null) {
+            for (Polyline polylinePath : polyLinePaths) {
+                polylinePath.remove();
             }
         }
 
     }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> routes) {
+
+        polyLinePaths = new ArrayList<>();
+        originMarkers = new ArrayList<>();
+        destinationMarker = new ArrayList<>();
+
+        progressDialog.dismiss();
+        for (Route route : routes) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 13));
+
+
+            txtcustomer_name.setText("Package: "+pacakge +"\n Distance: "+route.distance.text+" \nTime: "+route.duration.text );
+
+
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter))
+                    .title(route.startAddress)
+                    .position(route.startLocation)));
+
+            destinationMarker.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.user))
+                    .title(route.endAddress)
+                    .position(route.endLocation)));
+
+            PolylineOptions polylineOptions = new PolylineOptions()
+                    .geodesic(true)
+                    .color(Color.RED)
+                    .width(10);
+
+            for (int i = 0; i < route.points.size(); i++) {
+                polylineOptions.add(route.points.get(i));
+            }
+
+            polyLinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+    }
+
 
 }
