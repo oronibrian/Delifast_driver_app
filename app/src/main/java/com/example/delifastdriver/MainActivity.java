@@ -5,11 +5,9 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +23,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.delifastdriver.API.Urls;
@@ -42,34 +41,32 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.delifastdriver.API.Urls.Delivery;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener {
 
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
-    private GoogleMap mMap;
-    String to,from="";
-    EditText source_location,destination_location;
-    TextView txtFare,txtcustomer_name;
+    String to, from = "";
+    EditText source_location, destination_location;
+    TextView txtFare, txtcustomer_name;
     ImageButton btncall;
-
-
+    String pacakge;
+    DriverApplication app;
+    private GoogleMap mMap;
     private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarker = new ArrayList<>();
     private List<Polyline> polyLinePaths = new ArrayList<>();
     private ProgressDialog progressDialog;
-    String pacakge;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,15 +74,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_main);
 
         btnEndRide = findViewById(R.id.btnEndRide);
-        source_location=findViewById(R.id.source_location);
-        destination_location=findViewById(R.id.destination_location);
-        txtFare=findViewById(R.id.txtFare);
-        txtcustomer_name=findViewById(R.id.txtcustomer_name);
-        btncall=findViewById(R.id.btncall);
+        source_location = findViewById(R.id.source_location);
+        destination_location = findViewById(R.id.destination_location);
+        txtFare = findViewById(R.id.txtFare);
+        txtcustomer_name = findViewById(R.id.txtcustomer_name);
+        btncall = findViewById(R.id.btncall);
 
-
-
-
+        app = (DriverApplication) getApplicationContext();
 
         markerPoints = new ArrayList<>();
 
@@ -96,13 +91,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         loadDeliveryRoute();
 
 
-
-
         btncall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
-                callIntent.setData(Uri.parse("tel:"+from));
+                callIntent.setData(Uri.parse("tel:" + from));
 
                 if (ActivityCompat.checkSelfPermission(MainActivity.this,
                         Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
@@ -111,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(callIntent);
             }
         });
-
 
 
         btnEndRide.setOnClickListener(new View.OnClickListener() {
@@ -132,49 +124,56 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void loadDeliveryRoute() {
 
 
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.ApiUrls,
-                new Response.Listener<String>() {
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, Urls.Delivery, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
-
-                        Log.e("Resp", response);
+                    public void onResponse(JSONObject response) {
 
 
                         try {
-                            JSONObject obj = new JSONObject(response);
-
-                            String package_id = obj.getString("id");
-                            String receiver_phone = obj.getString("receiver_phone");
-                            String pickup_name = obj.getString("pickup_name");
-                            String title = obj.getString("title");
-                            String dropoff_name = obj.getString("dropoff_name");
-                            String amount = obj.getString("cost");
-
-                            String distance = obj.getString("distance");
 
 
-                            Log.e("id:", package_id);
-                            Log.e("receiver_phone:", receiver_phone);
-                            Log.e("pickup_name:", pickup_name);
-                            Log.e("title:", title);
-                            Log.e("dropoff_name:", dropoff_name);
+                            for (int i = 0; i < response.length(); i++) {
 
-                            to=pickup_name;
-                            from=receiver_phone;
+                                JSONObject dvr = response.getJSONObject("driver");
 
-                            destination_location.setText(dropoff_name +", kenya");
-                            source_location.setText(pickup_name+ ", kenya");
-                            txtFare.setText("Ksh "+amount);
-                            txtcustomer_name.setText("Package: "+title +"\n Receiver: "+receiver_phone+" \nDistance: "+distance +"km");
+                                String status = response.getJSONObject("package").getString("status");
+                                String driver = response.getJSONObject("driver").getString("username");
 
-                            pacakge=title;
 
+//                                if (status == "notpicked" && driver == app.getUsername()) {
+
+                                    String pickup_name = response.getJSONObject("package").getString("pickup_name");
+                                    String dropoff_name = response.getJSONObject("package").getString("dropoff_name");
+                                    String title = response.getJSONObject("package").getString("title");
+
+                                    String distance = response.getJSONObject("package").getString("distance");
+                                    String cost = response.getJSONObject("package").getString("cost");
+                                    String receiver_phone = response.getJSONObject("package").getString("receiver_phone");
+
+                                    Log.e("pickup_name", pickup_name.toString());
+
+                                    to = pickup_name;
+                                    from = receiver_phone;
+
+                                    destination_location.setText(dropoff_name + ", kenya");
+                                    source_location.setText(pickup_name + ", kenya");
+                                    txtFare.setText("Ksh " + cost);
+                                    txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+
+                                    pacakge = title;
+
+
+
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
+
                     }
+
                 },
                 new Response.ErrorListener() {
                     @Override
@@ -183,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
-
 
 
         //creating a request queue
@@ -196,14 +194,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onRequestFinished(Request<Object> request) {
-               sendRequest();
+                sendRequest();
 
             }
         });
 
     }
-
-
 
 
 
@@ -218,7 +214,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final Geocoder geocoder = new Geocoder(this);
 
 
-
         int reqCode = 1;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -230,13 +225,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
 
-            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, reqCode);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, reqCode);
             return;
         }
         mMap.setMyLocationEnabled(true);
-
-
-
 
 
     }
@@ -250,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (destination.isEmpty()){
+        if (destination.isEmpty()) {
             Toast.makeText(this, "Please enter destination!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -262,26 +254,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
-
-
-    private void update_package(){
+    private void update_package() {
 
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
         String url = "http://206.81.0.212/api/packages/1/";
 
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                new Response.Listener<String>()
-                {
+                new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         // response
                         Log.d("Response", response);
                     }
                 },
-                new Response.ErrorListener()
-                {
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // error
@@ -291,9 +278,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ) {
 
             @Override
-            protected Map<String, String> getParams()
-            {
-                Map<String, String> params = new HashMap<String, String> ();
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
                 params.put("status", "Delivered");
 
                 return params;
@@ -338,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 13));
 
 
-            txtcustomer_name.setText("Package: "+pacakge +"\n Distance: "+route.distance.text+" \nTime: "+route.duration.text );
+            txtcustomer_name.setText("Package: " + pacakge + "\n Distance: " + route.distance.text + " \nTime: " + route.duration.text);
 
 
             originMarkers.add(mMap.addMarker(new MarkerOptions()

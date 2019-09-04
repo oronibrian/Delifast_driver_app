@@ -7,6 +7,7 @@ public class DriverApplication extends Application {
 
     String token_key;
 
+    String username;
 
     @Override
     public void onCreate() {
@@ -17,6 +18,13 @@ public class DriverApplication extends Application {
     public DriverApplication() {
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getToken_key() {
         return token_key;

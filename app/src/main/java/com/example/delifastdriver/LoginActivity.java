@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
 
         progressDoalog.setMax(10);
         progressDoalog.setMessage("Login in....");
-        progressDoalog.setTitle("Log in bar");
+        progressDoalog.setTitle("Driver Login");
         progressDoalog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
 
@@ -163,8 +163,12 @@ public class LoginActivity extends AppCompatActivity {
                 for (int i = 0; i < data.length(); i++) {
 
                    String name = data.getString("first_name");
+                    String username = data.getString("username");
 
-                   Log.e("name",name);
+                    app.setUsername(username);
+
+
+                    Log.e("name",name);
                 }
 
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
