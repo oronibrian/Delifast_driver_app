@@ -1,4 +1,4 @@
-package com.example.delifastdriver.Modules;
+package com.zap.zapdriver.Modules;
 
 public class Duration {
     public String text;

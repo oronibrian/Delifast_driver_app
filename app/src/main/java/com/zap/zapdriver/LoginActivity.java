@@ -1,4 +1,4 @@
-package com.example.delifastdriver;
+package com.zap.zapdriver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,10 +17,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.delifastdriver.API.Urls;
+import com.zap.zapdriver.API.Urls;
 import com.google.android.material.button.MaterialButton;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,6 +63,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Request_token();
+//                Authorize_token();
 
             }
 
@@ -162,10 +162,14 @@ public class LoginActivity extends AppCompatActivity {
 
                 for (int i = 0; i < data.length(); i++) {
 
-                   String name = data.getString("first_name");
+                    String id = data.getString("pk");
+
+                    String name = data.getString("first_name");
                     String username = data.getString("username");
 
                     app.setUsername(username);
+                    app.setUserid(id);
+
 
 
                     Log.e("name",name);

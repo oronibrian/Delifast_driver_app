@@ -27,12 +27,12 @@
         android:layout_height="wrap_content"
         android:text="Signature" />
 
+
     <com.github.gcacace.signaturepad.views.SignaturePad
         android:id="@+id/signature_pad"
         android:layout_width="wrap_content"
         android:layout_height="174dp"
         app:penColor="@android:color/black" />
-
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -16,6 +16,17 @@
     <color name="colorRouteLine">#FF4081</color>
 
 
+    <color name="startcolor">@color/colorPrimary</color>
+    <color name="endcolor">@color/colorPrimary </color>
+
+
+    <color name="view_color">#DADADA</color>
+    <color name="app_background">#F8F7F7</color>
+    <color name="color_check">#139B18</color>
+    <color name="colorlink_blue">#1887f9</color>
+
+
+
     <color name="overlay_light_10">#1AFFFFFF</color>
     <color name="overlay_light_20">#33FFFFFF</color>
     <color name="overlay_light_30">#4DFFFFFF</color>
@@ -316,6 +327,9 @@
     <color name="grey_800">#424242</color>
     <color name="grey_900">#212121</color>
     <color name="grey_1000">#1a1a1a</color>
+    <color name="black">#141414</color>
+    <color name="green">#95F436</color>
+    <color name="white">#F7F4F4</color>
 
 
     <!--for random color generator -->

@@ -1,6 +1,13 @@
 <resources>
-    <string name="app_name">DelifastDriver</string>
+    <string name="app_name">Zap Driver</string>
 
     <string name="google_maps_key">AIzaSyBOMTEba6n0Xc0pUHQLMnEHS6DQ-rfBg64</string>
+
+
+    <string name="notification_text">Tracking, tap to cancel</string>
+    <string name="transport_id" translatable="false">123</string>
+    <string name="firebase_path" translatable="false">locations</string>
+    <string name="firebase_email" translatable="false">brianoroni6@gmail.com</string>
+    <string name="firebase_password" translatable="false">kodedema123</string>
 
 </resources>

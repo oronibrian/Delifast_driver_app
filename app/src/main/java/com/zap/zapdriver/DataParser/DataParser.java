@@ -1,4 +1,4 @@
-package com.example.delifastdriver.DataParser;
+package com.zap.zapdriver.DataParser;
 
 import com.google.android.gms.maps.model.LatLng;
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="textsize">18sp</dimen>
+    <dimen name="view_height">@dimen/_100sdp</dimen>
+    <dimen name="bottom_icon">@dimen/_35sdp</dimen>
+    <dimen name="bg_1dp">1dp</dimen>
+    <dimen name="card_shadow">1dp</dimen>
+
+</resources>
