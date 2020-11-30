@@ -9,5 +9,7 @@
     <string name="firebase_path" translatable="false">locations</string>
     <string name="firebase_email" translatable="false">brianoroni6@gmail.com</string>
     <string name="firebase_password" translatable="false">kodedema123</string>
+    <string name="navigation_drawer_open">Open</string>
+    <string name="navigation_drawer_close">Close</string>
 
 </resources>
