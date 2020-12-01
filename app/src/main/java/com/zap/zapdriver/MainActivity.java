@@ -2,7 +2,9 @@ package com.zap.zapdriver;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Geocoder;
@@ -58,6 +60,7 @@ import com.zap.zapdriver.Modules.DirectionFinder;
 import com.zap.zapdriver.Modules.DirectionFinderListener;
 import com.zap.zapdriver.Modules.Route;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -123,6 +126,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         app = (DriverApplication) getApplicationContext();
 
+        SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
+        String user = sharedPreferences.getString("username", "");
+        String id = sharedPreferences.getString("id", "");
+
+        if (user == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+
+        } else {
+            app.setUsername(user);
+            app.setUserid(id);
+        }
+
+
         Log.e("Name: ", app.getUsername());
 
 
@@ -149,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String[] stringLong = databaseLongitudedeString.split(", ");
                     Arrays.sort(stringLong);
                     String longitude = stringLong[stringLong.length - 1].split("=")[1];
-                    mMap.clear();
+//                    mMap.clear();
 
 
                     LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
@@ -246,12 +263,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void checkAssigned() {
 
-        Log.e("url", Urls.Delivery.toString());
+        Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
 
-        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(), null,
-                new Response.Listener<JSONObject>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(),
+                new Response.Listener<String>() {
+
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
 
                         Log.e("response", response.toString());
 
@@ -259,25 +277,38 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                             Log.e("response", response.toString());
 
-                            if (response.length() > 0) {
-                                for (int i = 0; i < response.length(); i++) {
+                            JSONArray jsonArray = new JSONArray(response);
 
+                            if (jsonArray.length() > 0) {
+                                for (int i = 0; i < jsonArray.length(); i++) {
 
-                                    JSONObject dvr = response.getJSONObject("driver");
+                                    JSONObject obj = jsonArray.getJSONObject(i);
 
-                                    String status = response.getJSONObject("package").getString("status");
-                                    String driver = response.getJSONObject("driver").getString("username");
+//                                    JSONObject dvr = obj.getJSONObject("driver_assigned");
+
+//                                    String status = obj.getJSONObject("package").getString("status");
+//                                    String driver = obj.getJSONObject("driver").getString("username");
 
 
 //                                if (status == "notpicked" && driver == app.getUsername()) {
 
-                                    String pickup_name = response.getJSONObject("package").getString("pickup_name");
-                                    String dropoff_name = response.getJSONObject("package").getString("dropoff_name");
-                                    String title = response.getJSONObject("package").getString("title");
+                                    String pickup_name = obj.getString("pickup_name");
+                                    String dropoff_name = obj.getString("dropoff_name");
+                                    String title = obj.getString("title");
 
-                                    String distance = response.getJSONObject("package").getString("distance");
-                                    String cost = response.getJSONObject("package").getString("cost");
-                                    String receiver_phone = response.getJSONObject("package").getString("receiver_phone");
+                                    String distance = obj.getString("distance");
+                                    String cost = obj.getString("cost");
+                                    String receiver_phone = obj.getString("receiver_phone");
+
+                                    to = pickup_name;
+                                    from = receiver_phone;
+
+                                    destination_location.setText(dropoff_name + ", kenya");
+                                    source_location.setText(pickup_name + ", kenya");
+                                    txtFare.setText("Ksh " + cost);
+                                    txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+
+                                    pacakge = title;
 
 
                                 }
@@ -297,6 +328,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             Log.e("error", e.toString());
 
                         }
+
+                        assignedDialog();
 
 
                     }
@@ -326,14 +359,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //adding the string request to request queue
         requestQueue.add(stringRequest);
 
-//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-//
-//            @Override
-//            public void onRequestFinished(Request<Object> request) {
-//                sendRequest();
-//
-//            }
-//        });
+        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+
+            @Override
+            public void onRequestFinished(Request<Object> request) {
+                sendRequest();
+
+            }
+        });
 
     }
 
@@ -386,6 +419,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
 
 
                     }
@@ -650,5 +684,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 })
                 .show();
 
+    }
+
+
+    public void assignedDialog() {
+        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+                .setTopColorRes(R.color.green_500)
+                .setButtonsColorRes(R.color.black)
+                .setIcon(R.drawable.scooter)
+                .setCancelable(false)
+                .setTitle("Package Request")
+                .setMessage("You have been assigned a package")
+                .setPositiveButton("Accept", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                })
+                .setNegativeButton("Reject", new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                })
+                .show();
     }
 }

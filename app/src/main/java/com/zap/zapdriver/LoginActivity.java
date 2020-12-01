@@ -1,14 +1,16 @@
 package com.zap.zapdriver;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -17,8 +19,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.zap.zapdriver.API.Urls;
 import com.google.android.material.button.MaterialButton;
+import com.zap.zapdriver.API.Urls;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -105,6 +107,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         parseData(response);
 
+
                         progressDoalog.dismiss();
                     },
                     error -> {
@@ -171,9 +174,20 @@ public class LoginActivity extends AppCompatActivity {
                     app.setUserid(id);
 
 
+                    SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
+                            Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("username", username);
+                    editor.putString("password", editextpassword.getText().toString());
+                    editor.putString("id", id);
+                    editor.apply();
+
+
+
 
                     Log.e("name",name);
                 }
+
 
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 startActivity(intent);
