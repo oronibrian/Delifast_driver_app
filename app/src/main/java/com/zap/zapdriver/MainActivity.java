@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -21,11 +22,15 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
 import com.android.volley.Request;
@@ -49,6 +54,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -70,7 +76,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, LocationListener {
+
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, LocationListener,
+        NavigationView.OnNavigationItemSelectedListener {
 
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
@@ -166,10 +174,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String[] stringLong = databaseLongitudedeString.split(", ");
                     Arrays.sort(stringLong);
                     String longitude = stringLong[stringLong.length - 1].split("=")[1];
+<<<<<<< HEAD
 //                    mMap.clear();
+=======
+>>>>>>> 89bcb3e689aa019376d167b4fdee1475f543182b
 
 
                     LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
+                    mMap.clear();
 
                     mMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter))
                             .title(latitude + " , " + longitude));
@@ -256,6 +268,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
+
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//
+//        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
+//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+//                this, drawer , toolbar , R.string.navigation_drawer_open ,
+//                R.string.navigation_drawer_close ) ;
+//        drawer.addDrawerListener(toggle) ;
+//        toggle.syncState() ;
+        NavigationView navigationView = findViewById(R.id. nav_view ) ;
+        navigationView.setNavigationItemSelectedListener( this ) ;
 
 
     }
@@ -369,7 +393,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
     }
-
+    @Override
+    public void onBackPressed () {
+        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
+        if (drawer.isDrawerOpen(GravityCompat. START )) {
+            drawer.closeDrawer(GravityCompat. START ) ;
+        } else {
+            super .onBackPressed() ;
+        }
+    }
 
     private void loadDeliveryRoute() {
 
@@ -686,6 +718,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+<<<<<<< HEAD
 
     public void assignedDialog() {
         new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
@@ -709,5 +742,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 })
                 .show();
+=======
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+        int id = item.getItemId() ;
+        if (id == R.id. nav_camera ) {
+            // Handle the camera action
+        } else if (id == R.id. nav_gallery ) {
+        } else if (id == R.id. nav_send ) {
+        }
+        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
+        drawer.closeDrawer(GravityCompat. START ) ;
+        return true;
+>>>>>>> 89bcb3e689aa019376d167b4fdee1475f543182b
     }
 }
