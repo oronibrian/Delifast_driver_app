@@ -6,7 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,10 +24,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,6 +33,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     AllianceLoader allianceLoader;
+    Bitmap smallMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +135,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         app = (DriverApplication) getApplicationContext();
+
+        int height = 100;
+        int width = 100;
+        BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.riderremove);
+        Bitmap b = bitmapdraw.getBitmap();
+        smallMarker = Bitmap.createScaledBitmap(b, width, height, false);
 
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
         String user = sharedPreferences.getString("username", "");
@@ -174,18 +182,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String[] stringLong = databaseLongitudedeString.split(", ");
                     Arrays.sort(stringLong);
                     String longitude = stringLong[stringLong.length - 1].split("=")[1];
-<<<<<<< HEAD
 //                    mMap.clear();
-=======
->>>>>>> 89bcb3e689aa019376d167b4fdee1475f543182b
 
 
-                    LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-                    mMap.clear();
-
-                    mMap.addMarker(new MarkerOptions().position(latLng).icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter))
-                            .title(latitude + " , " + longitude));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
 
                 } catch (Exception e) {
@@ -308,14 +307,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                     JSONObject obj = jsonArray.getJSONObject(i);
 
-//                                    JSONObject dvr = obj.getJSONObject("driver_assigned");
-
-//                                    String status = obj.getJSONObject("package").getString("status");
-//                                    String driver = obj.getJSONObject("driver").getString("username");
-
-
-//                                if (status == "notpicked" && driver == app.getUsername()) {
-
                                     String pickup_name = obj.getString("pickup_name");
                                     String dropoff_name = obj.getString("dropoff_name");
                                     String title = obj.getString("title");
@@ -336,14 +327,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                                 }
+                                assignedDialog();
+
+
+
+
                             } else {
-                                v.setVisibility(View.GONE);
+                                v.setVisibility(View.VISIBLE);
 
+                                Log.e("Empty", "Empty");
 
-//                                ll_straight.setVisibility(View.GONE);
-//                                ll_to_from.setVisibility(View.GONE);
-//                                ll_call.setVisibility(View.GONE);
-
+                                card_id_package_serach.setVisibility(View.VISIBLE);
+                                card_id_package.setVisibility(View.GONE);
+//                                ll_call.setVisibility(View.VISIBLE);
 
                             }
 
@@ -351,9 +347,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             e.printStackTrace();
                             Log.e("error", e.toString());
 
+
                         }
 
-                        assignedDialog();
 
 
                     }
@@ -368,8 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 + "\nCause " + error.getCause()
                                 + "\nmessage" + error.getMessage());
 //                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
-                        card_id_package.setVisibility(View.GONE);
-                        card_id_package_serach.setVisibility(View.VISIBLE);
+
                     }
                 }
 
@@ -383,14 +378,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //adding the string request to request queue
         requestQueue.add(stringRequest);
 
-        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-
-            @Override
-            public void onRequestFinished(Request<Object> request) {
-                sendRequest();
-
-            }
-        });
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
 
     }
     @Override
@@ -403,86 +398,47 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void loadDeliveryRoute() {
 
 
-        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, Urls.Delivery, null,
-                new Response.Listener<JSONObject>() {
+    private void updateLocation(String location) {
+
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+
+        String url =  Urls.location_update+""+app.getUserid();
+        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
+                new Response.Listener<String>()
+                {
                     @Override
-                    public void onResponse(JSONObject response) {
-
-
-                        try {
-
-
-                            for (int i = 0; i < response.length(); i++) {
-
-                                JSONObject dvr = response.getJSONObject("driver");
-
-                                String status = response.getJSONObject("package").getString("status");
-                                String driver = response.getJSONObject("driver").getString("username");
-
-
-//                                if (status == "notpicked" && driver == app.getUsername()) {
-
-                                String pickup_name = response.getJSONObject("package").getString("pickup_name");
-                                String dropoff_name = response.getJSONObject("package").getString("dropoff_name");
-                                String title = response.getJSONObject("package").getString("title");
-
-                                String distance = response.getJSONObject("package").getString("distance");
-                                String cost = response.getJSONObject("package").getString("cost");
-                                String receiver_phone = response.getJSONObject("package").getString("receiver_phone");
-
-                                Log.e("pickup_name", pickup_name.toString());
-
-                                to = pickup_name;
-                                from = receiver_phone;
-
-                                destination_location.setText(dropoff_name + ", kenya");
-                                source_location.setText(pickup_name + ", kenya");
-                                txtFare.setText("Ksh " + cost);
-                                txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
-
-                                pacakge = title;
-
-
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-
-
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
                     }
-
                 },
-                new Response.ErrorListener() {
+                new Response.ErrorListener()
+                {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        //displaying the error in toast if occurrs
-                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+                        // error
+                        Log.d("Error.Response", error.toString());
                     }
-                });
-
-
-        //creating a request queue
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        //adding the string request to request queue
-        requestQueue.add(stringRequest);
-
-        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+                }
+        ) {
 
             @Override
-            public void onRequestFinished(Request<Object> request) {
-                sendRequest();
-
+            protected Map<String, String> getParams()
+            {
+                Map<String, String>  params = new HashMap<String, String> ();
+                params.put("location", location);
+                return params;
             }
-        });
+
+        };
+
+        queue.add(putRequest);
+
 
     }
-
 
 
     @Override
@@ -673,8 +629,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e("lat", Double.toString(location.getLatitude()));
         Log.e("long", Double.toString(location.getLongitude()));
 
+
         databaseReference.child(app.getUsername()).child("latitude").push().setValue(Double.toString(location.getLatitude()));
         databaseReference.child(app.getUsername()).child("longitude").push().setValue(Double.toString(location.getLongitude()));
+
+        //Place current location marker
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title(app.getUserid());
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+        mMap.addMarker(markerOptions);
+
+        //move map camera
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+
+
+        String loc = location.getLatitude() + "," + location.getLongitude();
+
+
+        updateLocation(loc);
 
     }
 
@@ -718,7 +693,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-<<<<<<< HEAD
 
     public void assignedDialog() {
         new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
@@ -732,6 +706,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onClick(View v) {
 
+                        sendRequest();
+
+
+
                     }
                 })
                 .setNegativeButton("Reject", new View.OnClickListener() {
@@ -742,19 +720,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 })
                 .show();
-=======
+    }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-        int id = item.getItemId() ;
-        if (id == R.id. nav_camera ) {
-            // Handle the camera action
-        } else if (id == R.id. nav_gallery ) {
-        } else if (id == R.id. nav_send ) {
-        }
-        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
-        drawer.closeDrawer(GravityCompat. START ) ;
-        return true;
->>>>>>> 89bcb3e689aa019376d167b4fdee1475f543182b
+        return false;
     }
 }
