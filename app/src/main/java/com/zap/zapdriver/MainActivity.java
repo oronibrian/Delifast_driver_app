@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,12 +34,10 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.angads25.toggle.interfaces.OnToggledListener;
@@ -108,6 +107,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected LocationListener locationListener;
     AllianceLoader allianceLoader;
     Bitmap smallMarker;
+
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 30 * 1000; //Delay for 30 seconds.  One second = 1000 milliseconds.
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,6 +207,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 //        loadDeliveryRoute();
         checkAssigned();
+
+        handler.postDelayed(runnable = new Runnable() {
+            public void run() {
+                //do something
+                checkAssigned();
+
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
 
 
         // Check GPS is enabled
@@ -306,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                 for (int i = 0; i < jsonArray.length(); i++) {
 
                                     JSONObject obj = jsonArray.getJSONObject(i);
+                                    String id = obj.getString("id");
 
                                     String pickup_name = obj.getString("pickup_name");
                                     String dropoff_name = obj.getString("dropoff_name");
@@ -317,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                     to = pickup_name;
                                     from = receiver_phone;
+                                    app.setPackage_id(id);
 
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
@@ -328,8 +343,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                 }
                                 assignedDialog();
-
-
 
 
                             } else {
@@ -637,7 +650,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-        markerOptions.title(app.getUserid());
+        markerOptions.title(app.getUsername());
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
         mMap.addMarker(markerOptions);
 
@@ -666,6 +679,56 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onProviderDisabled(@NonNull String provider) {
         showLocationDissabledDialog();
+    }
+
+
+    public void acceptPackage(String package_id, String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.acceptrequest + "/" + package_id + "/" + rider_id;
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
+    public void rejectPackage(String package_id, String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.rejectrequest + "/" + package_id + "/" + rider_id;
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
     }
 
 
@@ -706,8 +769,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onClick(View v) {
 
-                        sendRequest();
 
+                        card_id_package_serach.setVisibility(View.GONE);
+                        card_id_package.setVisibility(View.VISIBLE);
+
+                        acceptPackage(app.getPackage_id(), app.getUserid());
+
+                        sendRequest();
 
 
                     }
@@ -716,6 +784,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     @Override
                     public void onClick(View v) {
+
+                        rejectPackage(app.getPackage_id(), app.getUserid());
+                        checkAssigned();
 
                     }
                 })

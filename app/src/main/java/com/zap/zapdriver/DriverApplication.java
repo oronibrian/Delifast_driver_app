@@ -9,6 +9,7 @@ public class DriverApplication extends Application {
 
     String username;
     String userid;
+    String package_id;
 
 
     @Override
@@ -42,5 +43,13 @@ public class DriverApplication extends Application {
 
     public void setToken_key(String token_key) {
         this.token_key = token_key;
+    }
+
+    public String getPackage_id() {
+        return package_id;
+    }
+
+    public void setPackage_id(String package_id) {
+        this.package_id = package_id;
     }
 }
