@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,10 +35,12 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.angads25.toggle.interfaces.OnToggledListener;
@@ -54,12 +57,16 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
 import com.zap.zapdriver.Modules.DirectionFinder;
@@ -111,7 +118,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Handler handler = new Handler();
     Runnable runnable;
     int delay = 30 * 1000; //Delay for 30 seconds.  One second = 1000 milliseconds.
+    ArrayList<LatLng> formerlocations;
 
+    private String androidIdd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         app = (DriverApplication) getApplicationContext();
+        androidIdd = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
         int height = 100;
         int width = 100;
@@ -149,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
         String user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
+        String pass = sharedPreferences.getString("password", "");
 
         if (user == null) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -157,10 +168,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } else {
             app.setUsername(user);
             app.setUserid(id);
+            app.setPassword(pass);
         }
 
 
         Log.e("Name: ", app.getUsername());
+
+        Authorize_token();
 
 
         markerPoints = new ArrayList<>();
@@ -189,8 +203,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                    mMap.clear();
 
 
-
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -208,14 +220,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        loadDeliveryRoute();
         checkAssigned();
 
-        handler.postDelayed(runnable = new Runnable() {
-            public void run() {
-                //do something
-                checkAssigned();
 
-                handler.postDelayed(runnable, delay);
-            }
-        }, delay);
+        formerlocations = new ArrayList();
+//
+//        handler.postDelayed(runnable = new Runnable() {
+//            public void run() {
+//                //do something
+////                checkAssigned();
+//
+//                isDriverAssigned();
+//
+//                handler.postDelayed(runnable, delay);
+//            }
+//        }, delay);
 
 
         // Check GPS is enabled
@@ -241,6 +258,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         btncall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                Toast.makeText(getApplicationContext(), "Please "+from, Toast.LENGTH_SHORT).show();
+
+
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + from));
 
@@ -249,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     return;
                 }
                 startActivity(callIntent);
+
             }
         });
 
@@ -275,7 +297,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-                update_package();
 
 
             }
@@ -290,9 +311,123 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                R.string.navigation_drawer_close ) ;
 //        drawer.addDrawerListener(toggle) ;
 //        toggle.syncState() ;
-        NavigationView navigationView = findViewById(R.id. nav_view ) ;
-        navigationView.setNavigationItemSelectedListener( this ) ;
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("TAG", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        // Log and toast
+                        Log.e("TAG", "FCM Found: " + token);
+                        Log.e("Name", ": " + app.getUserid());
+                        app.setFcm_device_token(token);
+
+
+
+
+                    }
+                });
+
+
+    }
+
+    private void isDriverAssigned() {
+
+        Log.e("url", Urls.is_driverassigned + "" + app.getUserid().toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.is_driverassigned + "" + app.getUserid(),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+                        Log.e("response", response.toString());
+
+                        try {
+
+                            Log.e("response", response.toString());
+
+                            JSONArray jsonArray = new JSONArray(response);
+
+                            if (jsonArray.length() > 0) {
+                                for (int i = 0; i < jsonArray.length(); i++) {
+
+                                    JSONObject obj = jsonArray.getJSONObject(i);
+                                    Boolean is_assigned = obj.getBoolean("is_assigned");
+
+                                    if (!is_assigned) {
+                                        checkAssigned();
+                                        txtcustomer_name.setText("Waiting........");
+
+                                    } else {
+                                        Log.e("NoT", "driver not assigned");
+                                        txtcustomer_name.setText("Assigned........");
+
+                                    }
+
+
+                                }
+
+
+                            } else {
+
+                                Log.e("No", "No driver");
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("error", e.toString());
+
+
+                        }
+
+
+                    }
+
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //displaying the error in toast if occurrs
+                        Log.e("Error", "Error: " + error
+                                + "\nCause " + error.getCause()
+                                + "\nmessage" + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+
+        );
+
+
+        //creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //adding the string request to request queue
+        requestQueue.add(stringRequest);
+
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
 
     }
 
@@ -346,12 +481,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                             } else {
-                                v.setVisibility(View.VISIBLE);
 
-                                Log.e("Empty", "Empty");
 
-                                card_id_package_serach.setVisibility(View.VISIBLE);
-                                card_id_package.setVisibility(View.GONE);
+//                                v.setVisibility(View.VISIBLE);
+//
+//                                Log.e("Empty", "Empty");
+//
+//                                card_id_package_serach.setVisibility(View.VISIBLE);
+//                                card_id_package.setVisibility(View.GONE);
 //                                ll_call.setVisibility(View.VISIBLE);
 
                             }
@@ -362,7 +499,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
                         }
-
 
 
                     }
@@ -401,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        });
 
     }
+
     @Override
     public void onBackPressed () {
         DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
@@ -412,7 +549,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
     private void updateLocation(String location) {
 
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
@@ -420,16 +556,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         String url =  Urls.location_update+""+app.getUserid();
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                new Response.Listener<String>()
-                {
+                new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         // response
                         Log.d("Response", response);
                     }
                 },
-                new Response.ErrorListener()
-                {
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // error
@@ -439,9 +573,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         ) {
 
             @Override
-            protected Map<String, String> getParams()
-            {
-                Map<String, String>  params = new HashMap<String, String> ();
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
                 params.put("location", location);
                 return params;
             }
@@ -514,42 +647,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-    private void update_package() {
-
-        RequestQueue queue = Volley.newRequestQueue(this); // this = context
-
-        String url = "http://206.81.0.212/api/packages/1/";
-
-        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // response
-                        Log.d("Response", response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // error
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        ) {
-
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("status", "Delivered");
-
-                return params;
-            }
-
-        };
-
-        queue.add(putRequest);
-    }
 
     @Override
     public void onDirectionFinderStart() {
@@ -642,16 +739,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.e("lat", Double.toString(location.getLatitude()));
         Log.e("long", Double.toString(location.getLongitude()));
 
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        formerlocations.add(latLng);
+        LatLng item;
+
+        if (formerlocations.size() > 1) {
+
+            item = formerlocations.get(formerlocations.size() - 1);
+        } else {
+            item = latLng;
+        }
+
 
         databaseReference.child(app.getUsername()).child("latitude").push().setValue(Double.toString(location.getLatitude()));
         databaseReference.child(app.getUsername()).child("longitude").push().setValue(Double.toString(location.getLongitude()));
 
+
         //Place current location marker
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        float bearing = (float) bearingBetweenLocations(item, latLng);
+
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title(app.getUsername());
+        markerOptions.rotation(bearing);
+
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
+
         mMap.addMarker(markerOptions);
 
         //move map camera
@@ -664,7 +778,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         updateLocation(loc);
 
+
     }
+
+    private double bearingBetweenLocations(LatLng latLng1, LatLng latLng2) {
+
+        double PI = 3.14159;
+        double lat1 = latLng1.latitude * PI / 180;
+        double long1 = latLng1.longitude * PI / 180;
+        double lat2 = latLng2.latitude * PI / 180;
+        double long2 = latLng2.longitude * PI / 180;
+
+        double dLon = (long2 - long1);
+
+        double y = Math.sin(dLon) * Math.cos(lat2);
+        double x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1)
+                * Math.cos(lat2) * Math.cos(dLon);
+
+        double brng = Math.atan2(y, x);
+
+        brng = Math.toDegrees(brng);
+        brng = (brng + 360) % 360;
+
+        return brng;
+    }
+
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -797,4 +935,120 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         return false;
     }
+
+
+    private void Authorize_token() {
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Token,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+
+                        try {
+                            JSONObject jsonArray = new JSONObject(response);
+
+                            String token = jsonArray.getString("access");
+
+                            Log.e("acceess", token);
+                            app.setAuttoken((token));
+
+                            Post_Device_fcm(token);
+
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+
+
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("username", app.getUsername());
+                params.put("password", app.getPassword());
+
+                return params;
+            }
+
+
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(postRequest);
+
+    }
+
+
+    private void Post_Device_fcm(String token) {
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("registration_id", token);
+        params.put("type", "android");
+        params.put("name", app.getUsername());
+        params.put("user", app.getUserid());
+        params.put("device_id", androidIdd);
+
+        Log.e("param: ", params.toString());
+
+        Log.e("params", params.toString());
+
+        JsonObjectRequest req = new JsonObjectRequest(Urls.FCM_URL, new JSONObject(params),
+                (JSONObject response) -> {
+                    try {
+
+
+                        Log.e("JsonResponse", response.toString(4));
+
+
+                    } catch (JSONException e) {
+
+
+                        e.printStackTrace();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Log.e("Eror", error.toString());
+
+
+            }
+        }) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(req);
+
+    }
+
+
 }

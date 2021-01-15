@@ -39,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
 
     DriverApplication app;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -173,6 +174,7 @@ public class LoginActivity extends AppCompatActivity {
                     app.setUsername(username);
                     app.setUserid(id);
 
+                    app.setPassword( editextpassword.getText().toString());
 
                     SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
                             Context.MODE_PRIVATE);
@@ -198,83 +200,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private void Authorize_token() {
-
-
-        final String email = edittextusername.getText().toString();
-        final String password = editextpassword.getText().toString();
-
-
-
-        //validating inputs
-        if (TextUtils.isEmpty(email)) {
-            edittextusername.setError("Please enter your email address or phone");
-            edittextusername.requestFocus();
-            return;
-        }
-
-        if (TextUtils.isEmpty(password)) {
-            editextpassword.setError("Please enter your password");
-            editextpassword.requestFocus();
-            return;
-        } else {
-
-            progressDoalog.show();
-
-            StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
-                    new Response.Listener<String>()
-                    {
-                        @Override
-                        public void onResponse(String response) {
-                            // response
-                            Log.e("Response", response);
-
-
-                            startActivity(new Intent(getApplicationContext(),MainActivity.class));
-                            finish();
-                            progressDoalog.dismiss();
-                        }
-                    },
-                    new Response.ErrorListener()
-                    {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            // error
-                            Log.d("Error.Response", error.toString());
-
-                            progressDoalog.dismiss();
-
-                        }
-                    }
-            ) {
-                @Override
-                protected Map<String, String> getParams()
-                {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("username", email);
-                    params.put("email", "");
-                    params.put("password", password);
-
-                    return params;
-                }
-
-
-                @Override
-                public Map<String, String> getHeaders() throws AuthFailureError {
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("Content-Type", "application/x-www-form-urlencoded");
-                    params.put("token", ACCESS_TOKEN);
-
-                    return params;
-                }
-            };
-
-            RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-            requestQueue.add(postRequest);
-
-        }
-    }
 
 
 

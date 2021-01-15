@@ -1,18 +1,38 @@
 package com.zap.zapdriver;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.github.gcacace.signaturepad.views.SignaturePad;
+import com.zap.zapdriver.API.Urls;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SignatureActivity extends AppCompatActivity {
     SignaturePad mSignaturePad;
     private Button mClearButton;
     private Button mSaveButton;
+    DriverApplication app;
+    TextView txt_from;
+    EditText receiver_phone;
 
 
     @Override
@@ -21,9 +41,31 @@ public class SignatureActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signature);
 
         mSignaturePad = (SignaturePad) findViewById(R.id.signature_pad);
+        app = (DriverApplication) getApplicationContext();
 
         mClearButton = (Button) findViewById(R.id.clear_button);
         mSaveButton = (Button) findViewById(R.id.save_button);
+        txt_from = findViewById(R.id.txt_from);
+        receiver_phone = findViewById(R.id.receiver_phone);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
+        String user = sharedPreferences.getString("username", "");
+        String id = sharedPreferences.getString("id", "");
+
+        if (user == null) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+
+        } else {
+            app.setUsername(user);
+            app.setUserid(id);
+        }
+
+
+        Log.e("Name: ", app.getUsername());
+
+        checkAssigned();
+
 
         mSignaturePad.setOnSignedListener(new SignaturePad.OnSignedListener() {
 
@@ -61,9 +103,134 @@ public class SignatureActivity extends AppCompatActivity {
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    Toast.makeText(SignatureActivity.this, "Delivery confirmed", Toast.LENGTH_SHORT).show();
+                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString());
 
             }
         });
     }
+
+
+    private void checkAssigned() {
+
+        Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+                        Log.e("response", response.toString());
+
+                        try {
+
+                            Log.e("response", response.toString());
+
+                            JSONArray jsonArray = new JSONArray(response);
+
+                            if (jsonArray.length() > 0) {
+                                for (int i = 0; i < jsonArray.length(); i++) {
+
+                                    JSONObject obj = jsonArray.getJSONObject(i);
+                                    String id = obj.getString("id");
+
+                                    String pickup_name = obj.getString("pickup_name");
+                                    String dropoff_name = obj.getString("dropoff_name");
+                                    String title = obj.getString("title");
+
+                                    String distance = obj.getString("distance");
+                                    String cost = obj.getString("cost");
+                                    String receiver_phone = obj.getString("receiver_phone");
+
+                                    app.setPackage_id(id);
+
+
+                                    txt_from.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+
+
+                                }
+
+
+                            } else {
+
+                                Log.e("Empty", "Empty");
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("error", e.toString());
+
+
+                        }
+
+
+                    }
+
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //displaying the error in toast if occurrs
+                        Log.e("Error", "Error: " + error
+                                + "\nCause " + error.getCause()
+                                + "\nmessage" + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+
+        );
+
+
+        //creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //adding the string request to request queue
+        requestQueue.add(stringRequest);
+
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
+
+    }
+
+
+    public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id;
+        Log.e("URL", url);
+
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.e("Response", response);
+                        Toast.makeText(SignatureActivity.this, "Delivery confirmed", Toast.LENGTH_SHORT).show();
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
 }

@@ -54,10 +54,10 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:ellipsize="end"
-                        android:maxLines="1"
+                        android:maxLines="2"
                         android:padding="@dimen/spacing_medium"
                         android:singleLine="true"
-                        android:textSize="@dimen/textsize"
+                        android:textSize="@dimen/spacing_large"
                         android:textStyle="bold"
                         tools:text="GJ 2XX - F4F4" />
 
@@ -71,7 +71,7 @@
                         android:paddingStart="@dimen/spacing_medium"
                         android:paddingLeft="@dimen/spacing_medium"
                         android:singleLine="true"
-                        android:textSize="@dimen/textsize"
+                        android:textSize="@dimen/spacing_large"
                         android:textStyle="bold"
                         tools:text="9875865215" />
                 </LinearLayout>
@@ -82,24 +82,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0.5"
+                    android:visibility="gone"
                     android:orientation="vertical">
 
-                    <ImageButton
-                        android:id="@+id/btncall"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:src="@drawable/phone" />
 
-                    <TextView
-                        android:id="@+id/txt_status"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:minLines="2"
-                        android:textColor="@color/black"
-                        android:textSize="@dimen/textsize"
-                        tools:text="call" />
                 </LinearLayout>
 
 
@@ -107,7 +93,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="0.5dp"
+                android:layout_height="12dp"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:visibility="visible" />
 
@@ -122,77 +108,169 @@
                 android:visibility="visible"
                 android:weightSum="2">
 
+
                 <LinearLayout
+                    android:id="@+id/ll_tracking"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/iv_map"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/spacing_mlarge"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="@dimen/spacing_middle"
+                        android:layout_marginRight="@dimen/spacing_middle"
+                        android:src="@drawable/ic_location_tracking"
+                        app:tint="@color/red_800" />
+
+                    <TextView
+                        android:id="@+id/source_location"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:padding="@dimen/spacing_small"
+                        android:text="From"
+                        android:textSize="@dimen/spacing_large" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/ivFrom"
+                    android:layout_width="@dimen/spacing_large"
+                    android:layout_height="@dimen/spacing_large"
+                    android:layout_gravity="start"
+                    android:layout_marginLeft="@dimen/spacing_middle"
+                    android:layout_marginRight="@dimen/spacing_middle"
+                    android:src="@drawable/bg_dotted" />
+
+                <LinearLayout
+                    android:id="@+id/ll_play_back"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/spacing_mlarge"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="@dimen/spacing_middle"
+                        android:layout_marginRight="@dimen/spacing_middle"
+                        android:src="@drawable/ic_location_tracking"
+                        app:tint="@color/green" />
+
+                    <TextView
+                        android:id="@+id/destination_location"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:padding="@dimen/spacing_small"
+                        android:text="Too"
+                        android:textSize="@dimen/spacing_large" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:visibility="visible" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:visibility="visible" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@android:color/white"
                     android:orientation="horizontal">
 
                     <LinearLayout
-                        android:id="@+id/ll_tracking"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_medium">
 
-                        <ImageView
-                            android:id="@+id/iv_map"
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/spacing_mlarge"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginLeft="@dimen/spacing_middle"
-                            android:layout_marginRight="@dimen/spacing_middle"
-                            android:src="@drawable/ic_location_tracking"
-                            app:tint="@color/red_800" />
+                        <ImageButton
+                            android:id="@+id/map_button"
+                            android:layout_width="?attr/actionBarSize"
+                            android:layout_height="?attr/actionBarSize"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:tint="@color/colorPrimary"
+                            app:srcCompat="@drawable/ic_near_me" />
 
-                        <TextView
-                            android:id="@+id/source_location"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:padding="@dimen/spacing_small"
-                            android:text="From"
-                            android:textSize="@dimen/textsize" />
+
                     </LinearLayout>
+
+                    <View
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="0dp" />
+
+
+                    <Button
+                        android:id="@+id/btnEndRide"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/white_round_corner"
+                        android:gravity="center"
+                        android:text="Complete"
+                        android:tint="@android:color/white"
+                        app:backgroundTint="@color/colorPrimary"
+
+                        app:rippleColor="@color/deep_orange_400" />
+
+                    <View
+                        android:layout_width="?attr/actionBarSize"
+                        android:layout_height="0dp" />
+
 
                     <LinearLayout
-                        android:id="@+id/ll_play_back"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_medium">
 
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="@dimen/spacing_mlarge"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginLeft="@dimen/spacing_middle"
-                            android:layout_marginRight="@dimen/spacing_middle"
-                            android:src="@drawable/ic_location_tracking"
-                            app:tint="@color/green" />
+                        <ImageButton
+                            android:id="@+id/btncall"
+                            android:layout_width="?attr/actionBarSize"
+                            android:layout_height="?attr/actionBarSize"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:tint="@color/colorPrimary"
+                            app:srcCompat="@drawable/phone" />
 
-                        <TextView
-                            android:id="@+id/destination_location"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:padding="@dimen/spacing_small"
-                            android:text="Too"
-                            android:textSize="@dimen/textsize" />
+
                     </LinearLayout>
-
 
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnEndRide"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="Complete Delivery" />
 
             </LinearLayout>
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:visibility="visible" />
+
+
         </LinearLayout>
 
         <LinearLayout

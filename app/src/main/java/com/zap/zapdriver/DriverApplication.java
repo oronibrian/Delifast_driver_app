@@ -10,6 +10,9 @@ public class DriverApplication extends Application {
     String username;
     String userid;
     String package_id;
+    String password;
+    String fcm_device_token;
+    String auttoken;
 
 
     @Override
@@ -52,4 +55,29 @@ public class DriverApplication extends Application {
     public void setPackage_id(String package_id) {
         this.package_id = package_id;
     }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getFcm_device_token() {
+        return fcm_device_token;
+    }
+
+    public void setFcm_device_token(String fcm_device_token) {
+        this.fcm_device_token = fcm_device_token;
+    }
+
+    public String getAuttoken() {
+        return auttoken;
+    }
+
+    public void setAuttoken(String auttoken) {
+        this.auttoken = auttoken;
+    }
 }
+

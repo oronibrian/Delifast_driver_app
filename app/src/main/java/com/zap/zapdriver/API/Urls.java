@@ -14,6 +14,14 @@ public class Urls {
     public static final String acceptrequest = Base2 + "acceptrequest";
     public static final String rejectrequest = Base2 + "rejectrequest";
 
+    public static final String is_driverassigned = Base2 + "api/v1/is_assined?id=";
+
+
+    public static final String Token = Base2 + "api/token/";
+    public static final String FCM_URL = Base2 + "api/devices/";
+
+    public static final String complete_delivery_request = Base2 + "deliverPackage";
+
 
 
 }
