@@ -9,7 +9,7 @@
     android:baselineAligned="false"
     android:gravity="center"
     android:orientation="horizontal"
-    android:padding="@dimen/activity_horizontal_margin">
+    android:padding="@dimen/notification_size">
 
 
     <androidx.cardview.widget.CardView
@@ -19,7 +19,7 @@
         android:layout_margin="@dimen/spacing_small"
         android:background="@drawable/bg_card"
         app:cardCornerRadius="@dimen/activity_horizontal_margin"
-        app:cardElevation="13dp">
+        app:cardElevation="10dp">
 
         <LinearLayout
             android:id="@+id/card_id_package"
@@ -167,7 +167,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="start"
                         android:padding="@dimen/spacing_small"
-                        android:text="Too"
+                        android:text="To"
                         android:textSize="@dimen/spacing_large" />
                 </LinearLayout>
 
@@ -219,7 +219,7 @@
                     </LinearLayout>
 
                     <View
-                        android:layout_width="?attr/actionBarSize"
+                        android:layout_width="10dp"
                         android:layout_height="0dp" />
 
 
@@ -236,7 +236,7 @@
                         app:rippleColor="@color/deep_orange_400" />
 
                     <View
-                        android:layout_width="?attr/actionBarSize"
+                        android:layout_width="10dp"
                         android:layout_height="0dp" />
 
 

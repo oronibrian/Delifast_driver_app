@@ -59,7 +59,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -105,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     LinearLayout ll_straight, ll_to_from, ll_call;
     LinearLayout card_id_package, card_id_package_serach;
     RelativeLayout ll_main;
+    MarkerOptions markerOptions;
 
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<LatLng> formerlocations;
 
     private String androidIdd;
+    DatabaseReference usersRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,18 +162,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String id = sharedPreferences.getString("id", "");
         String pass = sharedPreferences.getString("password", "");
 
-        if (user == null) {
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-
-        } else {
-            app.setUsername(user);
-            app.setUserid(id);
-            app.setPassword(pass);
-        }
-
-
-        Log.e("Name: ", app.getUsername());
 
         Authorize_token();
 
@@ -184,41 +173,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         databaseReference = FirebaseDatabase.getInstance().getReference("Locations");
-        DatabaseReference usersRef = databaseReference.child(app.getUsername());
 
-        usersRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                try {
-                    String databaseLatitudeString = dataSnapshot.child("latitude").getValue().toString().substring(1, dataSnapshot.child("latitude").getValue().toString().length() - 1);
-                    String databaseLongitudedeString = dataSnapshot.child("longitude").getValue().toString().substring(1, dataSnapshot.child("longitude").getValue().toString().length() - 1);
+        if (user.equals("")) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
 
-                    String[] stringLat = databaseLatitudeString.split(", ");
-                    Arrays.sort(stringLat);
-                    String latitude = stringLat[stringLat.length - 1].split("=")[1];
+        } else {
+            app.setUsername(user);
+            app.setUserid(id);
+            app.setPassword(pass);
 
-                    String[] stringLong = databaseLongitudedeString.split(", ");
-                    Arrays.sort(stringLong);
-                    String longitude = stringLong[stringLong.length - 1].split("=")[1];
+            Log.e("Name: ", app.getUsername());
+
+            usersRef = databaseReference.child(app.getUsername());
+
+            usersRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        String databaseLatitudeString = dataSnapshot.child("latitude").getValue().toString().substring(1, dataSnapshot.child("latitude").getValue().toString().length() - 1);
+                        String databaseLongitudedeString = dataSnapshot.child("longitude").getValue().toString().substring(1, dataSnapshot.child("longitude").getValue().toString().length() - 1);
+
+                        String[] stringLat = databaseLatitudeString.split(", ");
+                        Arrays.sort(stringLat);
+                        String latitude = stringLat[stringLat.length - 1].split("=")[1];
+
+                        String[] stringLong = databaseLongitudedeString.split(", ");
+                        Arrays.sort(stringLong);
+                        String longitude = stringLong[stringLong.length - 1].split("=")[1];
 //                    mMap.clear();
 
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
+                }
+            });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            checkAssigned();
 
-            }
-        });
+
+        }
 
 
 //        loadDeliveryRoute();
-        checkAssigned();
 
 
         formerlocations = new ArrayList();
@@ -560,7 +565,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onResponse(String response) {
                         // response
-                        Log.d("Response", response);
+                        Log.e("Location--updated", response);
                     }
                 },
                 new Response.ErrorListener() {
@@ -754,12 +759,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         databaseReference.child(app.getUsername()).child("latitude").push().setValue(Double.toString(location.getLatitude()));
         databaseReference.child(app.getUsername()).child("longitude").push().setValue(Double.toString(location.getLongitude()));
-
+//
 
         //Place current location marker
         float bearing = (float) bearingBetweenLocations(item, latLng);
 
-        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title(app.getUsername());
         markerOptions.rotation(bearing);
@@ -933,7 +938,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
+        int id = item.getItemId();
+
+        if (id == R.id.nav_send) {
+
+            Toast.makeText(getApplicationContext(), "Link", Toast.LENGTH_LONG).show();
+
+            new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+                    .setTopColorRes(R.color.indigo_400)
+                    .setButtonsColorRes(R.color.colorPrimary)
+                    .setIcon(R.drawable.logo_round)
+                    .setTitle("Logout Confirmation")
+                    .setMessage("Are you sure you want to log out?")
+                    .setPositiveButton(android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                            finish();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+            return true;
+
+        }
+        return true;
     }
 
 
