@@ -1,6 +1,7 @@
 package com.zap.zapdriver;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -9,17 +10,21 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -30,23 +35,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.angads25.toggle.interfaces.OnToggledListener;
 import com.github.angads25.toggle.model.ToggleableView;
 import com.github.angads25.toggle.widget.LabeledSwitch;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -60,14 +59,14 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.squareup.picasso.Picasso;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
+import com.zap.zapdriver.LocationUtils.LocationUtil;
+import com.zap.zapdriver.LocationUtils.PicassoMarker;
 import com.zap.zapdriver.Modules.DirectionFinder;
 import com.zap.zapdriver.Modules.DirectionFinderListener;
 import com.zap.zapdriver.Modules.Route;
@@ -77,14 +76,23 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, LocationListener,
-        NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements LocationUtil.GetLocationListener, DirectionFinderListener, NavigationView.OnNavigationItemSelectedListener {
+
+    private GoogleMap googleMapHomeFrag;
+    private double[] latLng = new double[2];
+    LatLng driverLatLng;
+    private PicassoMarker marker;
+    private LocationUtil locationUtilObj;
+    private final int REQUEST_CODE_PERMISSION_MULTIPLE = 123;
+    private boolean isDeninedRTPs = true;       // initially true to prevent anim(2)
+    private boolean showRationaleRTPs = false;
+    private float start_rotation;
+
 
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
@@ -108,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
+    String accepted = "";
 
     private DatabaseReference databaseReference;
     protected LocationManager locationManager;
@@ -127,6 +136,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        checkAndRequestRunTimePermissions();
+        getCurrentLocation();
+        //locationUtilObj = new LocationUtil(this, this);
+        initMap();
 
 
         btnEndRide = findViewById(R.id.btnEndRide);
@@ -147,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         card_id_package_serach = findViewById(R.id.card_id_package_serach);
         ll_main = findViewById(R.id.ll_main);
 
-
         app = (DriverApplication) getApplicationContext();
         androidIdd = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
 
@@ -163,16 +175,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         String pass = sharedPreferences.getString("password", "");
 
 
+
         Authorize_token();
 
 
         markerPoints = new ArrayList<>();
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
 
         databaseReference = FirebaseDatabase.getInstance().getReference("Locations");
+
 
         if (user.equals("")) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -184,87 +195,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             app.setPassword(pass);
 
             Log.e("Name: ", app.getUsername());
+        }
 
-            usersRef = databaseReference.child(app.getUsername());
+        checkAssigned();
 
-            usersRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    try {
-                        String databaseLatitudeString = dataSnapshot.child("latitude").getValue().toString().substring(1, dataSnapshot.child("latitude").getValue().toString().length() - 1);
-                        String databaseLongitudedeString = dataSnapshot.child("longitude").getValue().toString().substring(1, dataSnapshot.child("longitude").getValue().toString().length() - 1);
-
-                        String[] stringLat = databaseLatitudeString.split(", ");
-                        Arrays.sort(stringLat);
-                        String latitude = stringLat[stringLat.length - 1].split("=")[1];
-
-                        String[] stringLong = databaseLongitudedeString.split(", ");
-                        Arrays.sort(stringLong);
-                        String longitude = stringLong[stringLong.length - 1].split("=")[1];
-//                    mMap.clear();
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
 
-                    } catch (Exception e) {
-                        e.printStackTrace();
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("TAG", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+
+                        // Get new FCM registration token
+                        String token = task.getResult();
+
+                        // Log and toast
+                        Log.e("TAG", "FCM Found: " + token);
+                        Log.e("Name", ": " + app.getUserid());
+                        app.setFcm_device_token(token);
+
+
                     }
-
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-            checkAssigned();
-
-
-        }
-
-
-//        loadDeliveryRoute();
-
-
-        formerlocations = new ArrayList();
-//
-//        handler.postDelayed(runnable = new Runnable() {
-//            public void run() {
-//                //do something
-////                checkAssigned();
-//
-//                isDriverAssigned();
-//
-//                handler.postDelayed(runnable, delay);
-//            }
-//        }, delay);
-
-
-        // Check GPS is enabled
-        LocationManager lm = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Toast.makeText(this, "Please enable location services", Toast.LENGTH_SHORT).show();
-//            finish();
-        }
-
-        // Check location permission is granted - if it is, start
-        // the service, otherwise request the permission
-        int permission = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permission == PackageManager.PERMISSION_GRANTED) {
-
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST);
-        }
-
-
+                });
         btncall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Toast.makeText(getApplicationContext(), "Please "+from, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "call " + from, Toast.LENGTH_SHORT).show();
 
 
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -307,483 +270,126 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//
-//        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
-//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-//                this, drawer , toolbar , R.string.navigation_drawer_open ,
-//                R.string.navigation_drawer_close ) ;
-//        drawer.addDrawerListener(toggle) ;
-//        toggle.syncState() ;
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w("TAG", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        // Get new FCM registration token
-                        String token = task.getResult();
-
-                        // Log and toast
-                        Log.e("TAG", "FCM Found: " + token);
-                        Log.e("Name", ": " + app.getUserid());
-                        app.setFcm_device_token(token);
-
-
-
-
-                    }
-                });
-
-
-    }
-
-    private void isDriverAssigned() {
-
-        Log.e("url", Urls.is_driverassigned + "" + app.getUserid().toString());
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.is_driverassigned + "" + app.getUserid(),
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-
-                        Log.e("response", response.toString());
-
-                        try {
-
-                            Log.e("response", response.toString());
-
-                            JSONArray jsonArray = new JSONArray(response);
-
-                            if (jsonArray.length() > 0) {
-                                for (int i = 0; i < jsonArray.length(); i++) {
-
-                                    JSONObject obj = jsonArray.getJSONObject(i);
-                                    Boolean is_assigned = obj.getBoolean("is_assigned");
-
-                                    if (!is_assigned) {
-                                        checkAssigned();
-                                        txtcustomer_name.setText("Waiting........");
-
-                                    } else {
-                                        Log.e("NoT", "driver not assigned");
-                                        txtcustomer_name.setText("Assigned........");
-
-                                    }
-
-
-                                }
-
-
-                            } else {
-
-                                Log.e("No", "No driver");
-
-
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.e("error", e.toString());
-
-
-                        }
-
-
-                    }
-
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        //displaying the error in toast if occurrs
-                        Log.e("Error", "Error: " + error
-                                + "\nCause " + error.getCause()
-                                + "\nmessage" + error.getMessage());
-//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-
-
-        );
-
-
-        //creating a request queue
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        //adding the string request to request queue
-        requestQueue.add(stringRequest);
-
-//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-//
-//            @Override
-//            public void onRequestFinished(Request<Object> request) {
-////                sendRequest();
-//
-//            }
-//        });
-
-    }
-
-
-    private void checkAssigned() {
-
-        Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(),
-                new Response.Listener<String>() {
-
-                    @Override
-                    public void onResponse(String response) {
-
-                        Log.e("response", response.toString());
-
-                        try {
-
-                            Log.e("response", response.toString());
-
-                            JSONArray jsonArray = new JSONArray(response);
-
-                            if (jsonArray.length() > 0) {
-                                for (int i = 0; i < jsonArray.length(); i++) {
-
-                                    JSONObject obj = jsonArray.getJSONObject(i);
-                                    String id = obj.getString("id");
-
-                                    String pickup_name = obj.getString("pickup_name");
-                                    String dropoff_name = obj.getString("dropoff_name");
-                                    String title = obj.getString("title");
-
-                                    String distance = obj.getString("distance");
-                                    String cost = obj.getString("cost");
-                                    String receiver_phone = obj.getString("receiver_phone");
-
-                                    to = pickup_name;
-                                    from = receiver_phone;
-                                    app.setPackage_id(id);
-
-                                    destination_location.setText(dropoff_name + ", kenya");
-                                    source_location.setText(pickup_name + ", kenya");
-                                    txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
-
-                                    pacakge = title;
-
-
-                                }
-                                assignedDialog();
-
-
-                            } else {
-
-
-//                                v.setVisibility(View.VISIBLE);
-//
-//                                Log.e("Empty", "Empty");
-//
-//                                card_id_package_serach.setVisibility(View.VISIBLE);
-//                                card_id_package.setVisibility(View.GONE);
-//                                ll_call.setVisibility(View.VISIBLE);
-
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.e("error", e.toString());
-
-
-                        }
-
-
-                    }
-
-                },
-
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        //displaying the error in toast if occurrs
-                        Log.e("Error", "Error: " + error
-                                + "\nCause " + error.getCause()
-                                + "\nmessage" + error.getMessage());
-//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
-
-                    }
-                }
-
-
-        );
-
-
-        //creating a request queue
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        //adding the string request to request queue
-        requestQueue.add(stringRequest);
-
-//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
-//
-//            @Override
-//            public void onRequestFinished(Request<Object> request) {
-////                sendRequest();
-//
-//            }
-//        });
 
     }
 
     @Override
-    public void onBackPressed () {
-        DrawerLayout drawer = findViewById(R.id. drawer_layout ) ;
-        if (drawer.isDrawerOpen(GravityCompat. START )) {
-            drawer.closeDrawer(GravityCompat. START ) ;
-        } else {
-            super .onBackPressed() ;
+    protected void onResume() {
+        super.onResume();
+
+        getCurrentLocation();
+        if (locationUtilObj != null /*&& !locationUtilObj.isGoogleAPIConnected()*/) {
+            locationUtilObj.checkLocationSettings();
+            locationUtilObj.restart_location_update();
         }
     }
 
+    private void initMap() {
+        SupportMapFragment mSupportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-    private void updateLocation(String location) {
-
-        RequestQueue queue = Volley.newRequestQueue(this); // this = context
-
-
-        String url =  Urls.location_update+""+app.getUserid();
-        StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // response
-                        Log.e("Location--updated", response);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // error
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        ) {
-
+        mSupportMapFragment.getMapAsync(new OnMapReadyCallback() {
+            @SuppressLint("MissingPermission")
             @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("location", location);
-                return params;
-            }
+            public void onMapReady(GoogleMap googleMap) {
+                mMap = googleMap;
 
-        };
+                if (googleMap != null) {
+                    googleMapHomeFrag = googleMap;
+                    googleMapHomeFrag.getUiSettings().setAllGesturesEnabled(true);
+                    googleMapHomeFrag.getUiSettings().setScrollGesturesEnabled(true);
+                    googleMapHomeFrag.getUiSettings().setCompassEnabled(false);
+                    googleMapHomeFrag.getUiSettings().setMapToolbarEnabled(false);
 
-        queue.add(putRequest);
-
-
-    }
-
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        final CameraUpdate zoom = CameraUpdateFactory.zoomTo(12);
-
-        mMap = googleMap;
-        final MarkerOptions mp = new MarkerOptions();
-        final MarkerOptions mp2 = new MarkerOptions();
-
-        final Geocoder geocoder = new Geocoder(this);
-
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-
-        int reqCode = 1;
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, reqCode);
-            return;
-        }
-
-        try {
-            long MIN_DIST = 0;
-            long MIN_TIME = 2000;
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DIST, this);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DIST, this);
-
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("error loc: ", String.valueOf(e.getMessage()));
-        }
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, (android.location.LocationListener) this);
-
-        mMap.setMyLocationEnabled(true);
-
-
-    }
-
-
-    private void sendRequest() {
-        String origin = source_location.getText().toString();
-        String destination = destination_location.getText().toString();
-
-        if (origin.isEmpty()) {
-            Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (destination.isEmpty()) {
-            Toast.makeText(this, "Please enter destination!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        try {
-            new DirectionFinder(this, origin, destination).execute();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    @Override
-    public void onDirectionFinderStart() {
-
-        progressDialog = ProgressDialog.show(this, "Please wait", "Finding direction", true);
-        if (originMarkers != null) {
-            for (Marker marker : originMarkers) {
-                marker.remove();
-            }
-        }
-        if (destinationMarker != null) {
-            for (Marker marker : destinationMarker) {
-                marker.remove();
-            }
-        }
-        if (polyLinePaths != null) {
-            for (Polyline polylinePath : polyLinePaths) {
-                polylinePath.remove();
-            }
-        }
-
-    }
-
-    @Override
-    public void onDirectionFinderSuccess(List<Route> routes) {
-
-        polyLinePaths = new ArrayList<>();
-        originMarkers = new ArrayList<>();
-        destinationMarker = new ArrayList<>();
-
-        progressDialog.dismiss();
-        for (Route route : routes) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 13));
-
-
-            txtcustomer_name.setText("Package: " + pacakge + "\n Distance: " + route.distance.text + " \nTime: " + route.duration.text);
-
-
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter))
-                    .title(route.startAddress)
-                    .position(route.startLocation)));
-
-            destinationMarker.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.user))
-                    .title(route.endAddress)
-                    .position(route.endLocation)));
-
-            PolylineOptions polylineOptions = new PolylineOptions()
-                    .geodesic(true)
-                    .color(Color.RED)
-                    .width(10);
-
-            for (int i = 0; i < route.points.size(); i++) {
-                polylineOptions.add(route.points.get(i));
-            }
-
-            polyLinePaths.add(mMap.addPolyline(polylineOptions));
-        }
-    }
-
-
-    public void showDialog() {
-
-        card_id_package.setVisibility(View.GONE);
-        card_id_package_serach.setVisibility(View.GONE);
-
-        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
-                .setTopColorRes(R.color.red_600)
-                .setButtonsColorRes(R.color.green)
-                .setIcon(R.drawable.ic_location_tracking)
-                .setTitle("Driver Offline")
-                .setMessage(app.getUsername()+ " You are currently offline\nYou will not be able to receive any \ndelivery request")
-                .setCancelable(false)
-                .setPositiveButton("Go Online", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(getApplicationContext(), "positive clicked", Toast.LENGTH_SHORT).show();
-
-                        labeledSwitch.isOn();
-                        labeledSwitch.setOn(true);
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        return;
                     }
-                })
-                .show();
 
+                    googleMapHomeFrag.setMyLocationEnabled(false);
+                    googleMapHomeFrag.getUiSettings().setMyLocationButtonEnabled(true);
+
+                    if (driverLatLng != null) {
+                        if (googleMapHomeFrag != null) {
+                            googleMapHomeFrag.moveCamera(CameraUpdateFactory.newLatLngZoom(driverLatLng, 12.0f));
+                            googleMapHomeFrag.getUiSettings().setZoomControlsEnabled(false);
+                        }
+                    }
+
+
+                }
+            }
+        });
+    }
+
+    private void getCurrentLocation() {
+        if (locationUtilObj == null) {
+            locationUtilObj = new LocationUtil(this, this);
+        } else {
+            locationUtilObj.checkLocationSettings();
+        }
     }
 
     @Override
-    public void onLocationChanged(@NonNull Location location) {
-        Log.e("lat", Double.toString(location.getLatitude()));
-        Log.e("long", Double.toString(location.getLongitude()));
+    public void updateLocation(Location location) {
+        latLng[0] = location.getLatitude();
+        latLng[1] = location.getLongitude();
 
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-        formerlocations.add(latLng);
-        LatLng item;
-
-        if (formerlocations.size() > 1) {
-
-            item = formerlocations.get(formerlocations.size() - 1);
-        } else {
-            item = latLng;
+        if (marker == null) {
+            marker = new PicassoMarker(googleMapHomeFrag.addMarker(new MarkerOptions().position(new LatLng(latLng[0], latLng[1]))));
+            Picasso.get().load(R.drawable.riderremove).resize(80, 80)
+                    .into(marker);
+            googleMapHomeFrag.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latLng[0], latLng[1]), 12.0f));
         }
 
+        if ((latLng[0] != -1 && latLng[0] != 0) && (latLng[1] != -1 && latLng[1] != 0)) {
+            //googleMapHomeFrag.moveCamera(CameraUpdateFactory.newLatLngZoom(driverLatLng, 12.0f));
+            //float bearing = (float) bearingBetweenLocations(driverLatLng, new LatLng(location.getLatitude(), location.getLongitude()));
+            if (marker != null) {
+                moveVechile(marker.getmMarker(), location);
+//                rotateMarker(marker.getmMarker(), location.getBearing(), start_rotation);
+            }
+            driverLatLng = new LatLng(latLng[0], latLng[1]);
+        } else {
+            Toast.makeText(this, "Location Not Found", Toast.LENGTH_LONG).show();
+        }
+    }
 
-        databaseReference.child(app.getUsername()).child("latitude").push().setValue(Double.toString(location.getLatitude()));
-        databaseReference.child(app.getUsername()).child("longitude").push().setValue(Double.toString(location.getLongitude()));
-//
-
-        //Place current location marker
-        float bearing = (float) bearingBetweenLocations(item, latLng);
-
-        markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title(app.getUsername());
-        markerOptions.rotation(bearing);
-
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(smallMarker));
-
-        mMap.addMarker(markerOptions);
-
-        //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//        mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+    @Override
+    public void location_Error(String error) {
+        Log.e("LOCATIO_ERROR", error);
+    }
 
 
-        String loc = location.getLatitude() + "," + location.getLongitude();
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
 
+        if (id == R.id.nav_send) {
 
-        updateLocation(loc);
+            Toast.makeText(getApplicationContext(), "Link", Toast.LENGTH_LONG).show();
 
+            new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+                    .setTopColorRes(R.color.colorPrimary)
+                    .setButtonsColorRes(R.color.colorPrimary)
+                    .setIcon(R.drawable.scooter)
+                    .setTitle("Logout Confirmation")
+                    .setMessage("Are you sure you want to log out?")
+                    .setPositiveButton(android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                            finish();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+            return true;
 
+        }else if(id == R.id.nav_my_delivery){
+
+            startActivity(new Intent(this, My_Deliveries.class));
+
+        }
+        return true;
     }
 
     private double bearingBetweenLocations(LatLng latLng1, LatLng latLng2) {
@@ -808,21 +414,375 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return brng;
     }
 
+    /**
+     * custom method to check and request for run time permissions
+     * if not granted already
+     */
+    private void checkAndRequestRunTimePermissions() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            // Marshmallow+
 
+            if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                        REQUEST_CODE_PERMISSION_MULTIPLE);
+
+            }
+        }
+
+
+        onRunTimePermissionGranted();
+    }
+    /******************************************************/
+    /**
+     * custom method to execute after run time permissions
+     * granted or if it run time permission no required at all
+     */
+    private void onRunTimePermissionGranted() {
+
+        isDeninedRTPs = false;
+        getCurrentLocation();
+    }
+    /******************************************************/
+
+    /**
+     * predefined method to check run time permissions list call back
+     *
+     * @param requestCode   : to handle the corresponding request
+     * @param permissions:  contains the list of requested permissions
+     * @param grantResults: contains granted and un granted permissions result list
+     */
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_CODE_PERMISSION_MULTIPLE) {
+            if (grantResults.length > 0) {
+                for (int i = 0; i < permissions.length; i++) {
+                    String permission = permissions[i];
+                    if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                        isDeninedRTPs = true;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            showRationaleRTPs = shouldShowRequestPermissionRationale(permission);
+                        }
+
+                        break;
+                    }
+
+                }
+                onRunTimePermissionDenied();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    /******************************************************/
+
+    private void onRunTimePermissionDenied() {
+        if (isDeninedRTPs) {
+            if (!showRationaleRTPs) {
+                //goToSettings();
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                            REQUEST_CODE_PERMISSION_MULTIPLE);
+                }
+            }
+        } else {
+            onRunTimePermissionGranted();
+        }
+    }
+
+    public void moveVechile(final Marker myMarker, final Location finalPosition) {
+
+        final LatLng startPosition = myMarker.getPosition();
+
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        final Interpolator interpolator = new AccelerateDecelerateInterpolator();
+        final float durationInMs = 3000;
+        final boolean hideMarker = false;
+
+        handler.post(new Runnable() {
+            long elapsed;
+            float t;
+            float v;
+
+            @Override
+            public void run() {
+                // Calculate progress using interpolator
+                elapsed = SystemClock.uptimeMillis() - start;
+                t = elapsed / durationInMs;
+                v = interpolator.getInterpolation(t);
+
+                LatLng currentPosition = new LatLng(
+                        startPosition.latitude * (1 - t) + (finalPosition.getLatitude()) * t,
+                        startPosition.longitude * (1 - t) + (finalPosition.getLongitude()) * t);
+                myMarker.setPosition(currentPosition);
+                // myMarker.setRotation(finalPosition.getBearing());
+
+
+                // Repeat till progress is completeelse
+                if (t < 1) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+                    // handler.postDelayed(this, 100);
+                } else {
+                    if (hideMarker) {
+                        myMarker.setVisible(false);
+                    } else {
+                        myMarker.setVisible(true);
+                    }
+                }
+            }
+        });
+
 
     }
 
-    @Override
-    public void onProviderEnabled(@NonNull String provider) {
+
+    public void rotateMarker(final Marker marker, final float toRotation, final float st) {
+        final Handler handler = new Handler();
+        final long start = SystemClock.uptimeMillis();
+        final float startRotation = marker.getRotation();
+        final long duration = 1555;
+
+        final Interpolator interpolator = new LinearInterpolator();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                long elapsed = SystemClock.uptimeMillis() - start;
+                float t = interpolator.getInterpolation((float) elapsed / duration);
+
+                float rot = t * toRotation + (1 - t) * startRotation;
+
+
+                marker.setRotation(-rot > 180 ? rot / 2 : rot);
+                start_rotation = -rot > 180 ? rot / 2 : rot;
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16);
+                }
+            }
+        });
+    }
+
+
+    private void Authorize_token() {
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Token,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+
+                        try {
+                            JSONObject jsonArray = new JSONObject(response);
+
+                            String token = jsonArray.getString("access");
+
+                            Log.e("acceess", token);
+                            app.setAuttoken((token));
+
+//                            Post_Device_fcm(token);
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+
+
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("username", app.getUsername());
+                params.put("password", app.getPassword());
+
+                return params;
+            }
+
+
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(postRequest);
 
     }
 
-    @Override
-    public void onProviderDisabled(@NonNull String provider) {
-        showLocationDissabledDialog();
+    private void checkAssigned() {
+
+        Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+
+                        try {
+
+                            Log.e("response", response.toString());
+
+                            JSONArray jsonArray = new JSONArray(response);
+
+                            if (jsonArray.length() > 0) {
+                                for (int i = 0; i < jsonArray.length(); i++) {
+
+                                    JSONObject obj = jsonArray.getJSONObject(i);
+                                    String id = obj.getString("id");
+
+                                    String pickup_name = obj.getString("pickup_name");
+                                    String dropoff_name = obj.getString("dropoff_name");
+                                    String title = obj.getString("title");
+
+                                    String distance = obj.getString("distance");
+                                    String cost = obj.getString("cost");
+                                    String receiver_phone = obj.getString("receiver_phone");
+
+                                    accepted = obj.getString("status");
+
+                                    to = pickup_name;
+                                    from = receiver_phone;
+                                    app.setPackage_id(id);
+
+                                    destination_location.setText(dropoff_name + ", kenya");
+                                    source_location.setText(pickup_name + ", kenya");
+                                    txtFare.setText("Ksh " + cost);
+                                    txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+
+                                    pacakge = title;
+
+                                    if (!accepted.equalsIgnoreCase("Picked")) {
+                                        assignedDialog();
+                                    } else {
+                                        sendRequest();
+                                    }
+
+
+                                }
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("error", e.toString());
+
+
+                        }
+
+
+                    }
+
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //displaying the error in toast if occurrs
+                        Log.e("Error", "Error: " + error
+                                + "\nCause " + error.getCause()
+                                + "\nmessage" + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+
+        );
+
+
+        //creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //adding the string request to request queue
+        requestQueue.add(stringRequest);
+
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
+
     }
+
+
+    public void assignedDialog() {
+        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+                .setTopColorRes(R.color.green_500)
+                .setButtonsColorRes(R.color.black)
+                .setIcon(R.drawable.scooter)
+                .setCancelable(false)
+                .setTitle("Package Request")
+                .setMessage("You have been assigned a package")
+                .setPositiveButton("Accept", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+
+                        card_id_package_serach.setVisibility(View.GONE);
+                        card_id_package.setVisibility(View.VISIBLE);
+
+                        acceptPackage(app.getPackage_id(), app.getUserid());
+
+                        sendRequest();
+
+
+                    }
+                })
+                .setNegativeButton("Reject", new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+
+                        rejectPackage(app.getPackage_id(), app.getUserid());
+                        checkAssigned();
+
+
+                    }
+                })
+                .show();
+    }
+
+
+
+
+    private void sendRequest() {
+        String origin = source_location.getText().toString();
+        String destination = destination_location.getText().toString();
+
+        if (origin.isEmpty()) {
+            Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (destination.isEmpty()) {
+            Toast.makeText(this, "Please enter destination!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            new DirectionFinder(MainActivity.this, origin, destination).execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     public void acceptPackage(String package_id, String rider_id) {
@@ -875,7 +835,68 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    public void showLocationDissabledDialog() {
+    @Override
+    public void onDirectionFinderStart() {
+        progressDialog = ProgressDialog.show(this, "Please wait", "Finding direction", true);
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
+                marker.remove();
+            }
+        }
+        if (destinationMarker != null) {
+            for (Marker marker : destinationMarker) {
+                marker.remove();
+            }
+        }
+        if (polyLinePaths != null) {
+            for (Polyline polylinePath : polyLinePaths) {
+                polylinePath.remove();
+            }
+        }
+
+
+    }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> routes) {
+
+        polyLinePaths = new ArrayList<>();
+        originMarkers = new ArrayList<>();
+        destinationMarker = new ArrayList<>();
+
+        progressDialog.dismiss();
+        for (Route route : routes) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(route.startLocation));
+
+
+            txtcustomer_name.setText("Package: " + pacakge + "\n Distance: " + route.distance.text + " \nTime: " + route.duration.text);
+
+
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.scooter))
+                    .title(route.startAddress)
+                    .position(route.startLocation)));
+
+            destinationMarker.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.user))
+                    .title(route.endAddress)
+                    .position(route.endLocation)));
+
+            PolylineOptions polylineOptions = new PolylineOptions()
+                    .geodesic(true)
+                    .color(Color.RED)
+                    .width(10);
+
+            for (int i = 0; i < route.points.size(); i++) {
+                polylineOptions.add(route.points.get(i));
+            }
+
+            polyLinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+
+    }
+
+    public void showDialog() {
 
         card_id_package.setVisibility(View.GONE);
         card_id_package_serach.setVisibility(View.GONE);
@@ -884,200 +905,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .setTopColorRes(R.color.red_600)
                 .setButtonsColorRes(R.color.green)
                 .setIcon(R.drawable.ic_location_tracking)
-                .setTitle("Location Disabled")
-                .setMessage("Your location is current disabled")
+                .setTitle("Driver Offline")
+                .setMessage(app.getUsername() + " You are currently offline\nYou will not be able to receive any \ndelivery request")
                 .setCancelable(false)
-                .setPositiveButton("Enable", new View.OnClickListener() {
+                .setPositiveButton("Go Online", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        Toast.makeText(getApplicationContext(), "positive clicked", Toast.LENGTH_SHORT).show();
 
-//                        labeledSwitch.isOn();
-//                        labeledSwitch.setOn(true);
+                        labeledSwitch.isOn();
+                        labeledSwitch.setOn(true);
                     }
                 })
                 .show();
 
     }
-
-
-    public void assignedDialog() {
-        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
-                .setTopColorRes(R.color.green_500)
-                .setButtonsColorRes(R.color.black)
-                .setIcon(R.drawable.scooter)
-                .setCancelable(false)
-                .setTitle("Package Request")
-                .setMessage("You have been assigned a package")
-                .setPositiveButton("Accept", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-
-                        card_id_package_serach.setVisibility(View.GONE);
-                        card_id_package.setVisibility(View.VISIBLE);
-
-                        acceptPackage(app.getPackage_id(), app.getUserid());
-
-                        sendRequest();
-
-
-                    }
-                })
-                .setNegativeButton("Reject", new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-
-                        rejectPackage(app.getPackage_id(), app.getUserid());
-                        checkAssigned();
-
-                    }
-                })
-                .show();
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_send) {
-
-            Toast.makeText(getApplicationContext(), "Link", Toast.LENGTH_LONG).show();
-
-            new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
-                    .setTopColorRes(R.color.indigo_400)
-                    .setButtonsColorRes(R.color.colorPrimary)
-                    .setIcon(R.drawable.logo_round)
-                    .setTitle("Logout Confirmation")
-                    .setMessage("Are you sure you want to log out?")
-                    .setPositiveButton(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                            finish();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.no, null)
-                    .show();
-            return true;
-
-        }
-        return true;
-    }
-
-
-    private void Authorize_token() {
-
-
-        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Token,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // response
-
-                        try {
-                            JSONObject jsonArray = new JSONObject(response);
-
-                            String token = jsonArray.getString("access");
-
-                            Log.e("acceess", token);
-                            app.setAuttoken((token));
-
-                            Post_Device_fcm(token);
-
-
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // error
-                        Log.d("Error.Response", error.toString());
-
-
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("username", app.getUsername());
-                params.put("password", app.getPassword());
-
-                return params;
-            }
-
-
-        };
-
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        requestQueue.add(postRequest);
-
-    }
-
-
-    private void Post_Device_fcm(String token) {
-
-
-        HashMap<String, String> params = new HashMap<String, String>();
-        params.put("registration_id", token);
-        params.put("type", "android");
-        params.put("name", app.getUsername());
-        params.put("user", app.getUserid());
-        params.put("device_id", androidIdd);
-
-        Log.e("param: ", params.toString());
-
-        Log.e("params", params.toString());
-
-        JsonObjectRequest req = new JsonObjectRequest(Urls.FCM_URL, new JSONObject(params),
-                (JSONObject response) -> {
-                    try {
-
-
-                        Log.e("JsonResponse", response.toString(4));
-
-
-                    } catch (JSONException e) {
-
-
-                        e.printStackTrace();
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-                Log.e("Eror", error.toString());
-
-
-            }
-        }) {
-
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-
-                String auth = "Bearer " + app.getAuttoken();
-                headers.put("Authorization", auth);
-                return headers;
-            }
-
-
-        };
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-        requestQueue.add(req);
-
-    }
-
 
 }

@@ -61,6 +61,7 @@ dependencies {
     implementation 'com.yarolegovich:lovely-dialog:1.1.1'
 
     implementation 'com.alespero:expandable-cardview:0.8'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
 
 

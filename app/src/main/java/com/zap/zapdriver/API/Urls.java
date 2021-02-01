@@ -22,6 +22,6 @@ public class Urls {
 
     public static final String complete_delivery_request = Base2 + "deliverPackage";
 
-
+    public static final String driverassignedpackages = Base2 + "api/v1/driverassignedpackages/?driver_assigned=";
 
 }

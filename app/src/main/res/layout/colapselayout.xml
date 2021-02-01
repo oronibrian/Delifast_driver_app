@@ -18,7 +18,8 @@
         app:expandOnClick="true"
         app:inner_view="@layout/layout_bottom_bar"
         app:startExpanded="false"
-        app:title="Delivery Details" />
+        android:textAlignment="center"
+        app:title="Package Delivery Details" />
 
 
 </LinearLayout>
