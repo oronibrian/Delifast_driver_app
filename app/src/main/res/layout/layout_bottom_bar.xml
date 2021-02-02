@@ -207,12 +207,12 @@
                         android:orientation="horizontal"
                         android:padding="@dimen/spacing_medium">
 
-                        <ImageButton
-                            android:id="@+id/map_button"
+                        <ImageView
+                            android:id="@+id/qr_image"
+                            android:visibility="gone"
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:tint="@color/colorPrimary"
                             app:srcCompat="@drawable/ic_near_me" />
 
 
@@ -249,11 +249,21 @@
 
                         <ImageButton
                             android:id="@+id/btncall"
+                            android:visibility="gone"
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:tint="@color/colorPrimary"
                             app:srcCompat="@drawable/phone" />
+
+
+                        <ImageView
+                            android:id="@+id/barcode_image"
+                            android:visibility="gone"
+                            android:layout_width="?attr/actionBarSize"
+                            android:layout_height="?attr/actionBarSize"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            app:srcCompat="@drawable/ic_near_me" />
 
 
                     </LinearLayout>
@@ -266,7 +276,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="12dp"
+                android:layout_height="5dp"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:visibility="visible" />
 
@@ -347,6 +357,7 @@
                         android:orientation="horizontal">
 
                         <TextView
+                            android:visibility="gone"
                             android:id="@+id/tvPrint"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -374,41 +385,40 @@
                             android:fontFamily="@font/googlesansbold"
                             android:gravity="center"
                             android:padding="@dimen/spacing_small"
-                            android:text="@string/lbl_non_ac"
+                            android:text="Print"
                             android:textColor="@color/textchild"
                             android:textSize="@dimen/font_small" />
 
                         <TextView
-                            android:id="@+id/tvSleeper"
+                            android:id="@+id/tvmenu"
+                            android:layout_width="225dp"
+                            android:layout_height="70dp"
+                            android:clickable="true"
+                            android:drawableTop="@drawable/menu"
+                            android:drawablePadding="@dimen/spacing_small"
+                            android:focusable="true"
+                            android:drawableTint="@color/colorPrimary"
+                            android:fontFamily="@font/googlesansbold"
+                            android:gravity="center"
+                            android:padding="@dimen/spacing_small"
+                            android:text="menu"
+                            android:textColor="@color/textchild"
+                            android:textSize="@dimen/font_small" />
+
+                        <TextView
+                            android:id="@+id/tvcallOrder"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:background="?selectableItemBackgroundBorderless"
                             android:clickable="true"
-                            android:drawableTop="@drawable/places_ic_clear"
+                            android:drawableTop="@drawable/phone"
                             android:drawablePadding="@dimen/spacing_small"
                             android:focusable="true"
                             android:fontFamily="@font/googlesansbold"
                             android:gravity="center"
                             android:padding="@dimen/spacing_small"
-                            android:text="@string/lbl_sleeper"
-                            android:textColor="@color/textchild"
-                            android:textSize="@dimen/font_small" />
-
-                        <TextView
-                            android:id="@+id/tvSeater"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:background="?selectableItemBackgroundBorderless"
-                            android:clickable="true"
-                            android:drawableTop="@drawable/places_ic_clear"
-                            android:drawablePadding="@dimen/spacing_small"
-                            android:focusable="true"
-                            android:fontFamily="@font/googlesansbold"
-                            android:gravity="center"
-                            android:padding="@dimen/spacing_small"
-                            android:text="@string/lbl_seater"
+                            android:text="Call"
                             android:textColor="@color/textchild"
                             android:textSize="@dimen/font_small" />
 

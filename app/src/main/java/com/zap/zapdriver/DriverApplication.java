@@ -13,6 +13,7 @@ public class DriverApplication extends Application {
     String password;
     String fcm_device_token;
     String auttoken;
+    String package_from,package_to;
 
 
     @Override
@@ -78,6 +79,22 @@ public class DriverApplication extends Application {
 
     public void setAuttoken(String auttoken) {
         this.auttoken = auttoken;
+    }
+
+    public String getPackage_from() {
+        return package_from;
+    }
+
+    public void setPackage_from(String package_from) {
+        this.package_from = package_from;
+    }
+
+    public String getPackage_to() {
+        return package_to;
+    }
+
+    public void setPackage_to(String package_to) {
+        this.package_to = package_to;
     }
 }
 

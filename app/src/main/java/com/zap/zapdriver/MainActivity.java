@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -26,7 +28,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -35,6 +37,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
 import com.android.volley.Request;
@@ -62,6 +65,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
@@ -75,10 +80,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import androidmads.library.qrgenearator.QRGContents;
+import androidmads.library.qrgenearator.QRGEncoder;
+import androidmads.library.qrgenearator.QRGSaver;
 
 
 public class MainActivity extends AppCompatActivity implements LocationUtil.GetLocationListener, DirectionFinderListener, NavigationView.OnNavigationItemSelectedListener {
@@ -97,9 +108,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
     String to, from = "";
-    TextView source_location, destination_location;
-    TextView txtFare, txtcustomer_name;
-    ImageButton btncall;
+    TextView source_location, destination_location,tvmenu;
+    TextView txtFare, txtcustomer_name, tvscan;
+    TextView btncall;
     String pacakge;
     DriverApplication app;
     private GoogleMap mMap;
@@ -113,6 +124,13 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LinearLayout card_id_package, card_id_package_serach;
     RelativeLayout ll_main;
     MarkerOptions markerOptions;
+
+    private String inputValue;
+    private String savePath = Environment.getExternalStorageDirectory().getPath() + "/QRCode/";
+    private Bitmap bitmap,bitmap2;
+    private QRGEncoder qrgEncoder;
+    private ImageView qrImage;
+
 
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
@@ -147,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         destination_location = findViewById(R.id.destination_location);
         txtFare = findViewById(R.id.txtFare);
         txtcustomer_name = findViewById(R.id.txtcustomer_name);
-        btncall = findViewById(R.id.btncall);
+        btncall = findViewById(R.id.tvcallOrder);
 
         map_id = findViewById(R.id.map_id);
         ll_straight = findViewById(R.id.ll_straight);
@@ -159,6 +177,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         card_id_package = findViewById(R.id.card_id_package);
         card_id_package_serach = findViewById(R.id.card_id_package_serach);
         ll_main = findViewById(R.id.ll_main);
+
+        qrImage = findViewById(R.id.qr_image);
+        tvscan = findViewById(R.id.tvscan);
+        tvmenu=findViewById(R.id.tvmenu);
+
+        tvmenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                startActivity(new Intent(MainActivity.this,My_Deliveries.class));
+
+            }
+        });
 
         app = (DriverApplication) getApplicationContext();
         androidIdd = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -196,6 +227,55 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             Log.e("Name: ", app.getUsername());
         }
+
+
+        int smallerDimension = width < height ? width : height;
+        smallerDimension = 1000;
+        Log.e("Size: ",String.valueOf(smallerDimension));
+
+
+
+        QRGEncoder qrgEncoder = new QRGEncoder("Delivery Package identity: "+app.getPackage_id(), null, QRGContents.Type.TEXT, smallerDimension);
+        // Getting QR-Code as Bitmap
+        bitmap = qrgEncoder.getBitmap();
+        // Setting Bitmap to ImageView
+        qrImage.setImageBitmap(bitmap);
+
+
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+             bitmap2 = barcodeEncoder.encodeBitmap("content", BarcodeFormat.CODE_128, 600, 400);
+            ImageView imageViewQrCode = (ImageView) findViewById(R.id.barcode_image);
+            imageViewQrCode.setImageBitmap(bitmap2);
+        } catch(Exception e) {
+
+        }
+
+
+        tvscan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    try {
+//                        boolean save = new QRGSaver().save(savePath, "qr", bitmap, QRGContents.ImageType.IMAGE_JPEG);
+//                        String result = save ? "Image Saved" : "Image Not Saved";
+                        saveToInternalSorage(bitmap);
+                        saveToInternalSorageBarcode(bitmap2);
+                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
+
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                }
+
+
+            }
+        });
+
 
         checkAssigned();
 
@@ -271,6 +351,58 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         });
 
 
+    }
+
+
+    private String saveToInternalSorage(Bitmap bitmapImage) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("picture", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath = new File(directory, "qr.jpg");
+
+        FileOutputStream fos = null;
+        try {
+
+            fos = new FileOutputStream(mypath);
+
+            // Use the compress method on the BitMap object to write image to
+            // the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.close();
+
+            startActivity(new Intent(MainActivity.this,PrintQRActivity.class));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return directory.getAbsolutePath();
+    }
+
+
+    private String saveToInternalSorageBarcode(Bitmap bitmapImage) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("picture", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath = new File(directory, "barcode.jpg");
+
+        FileOutputStream fos = null;
+        try {
+
+            fos = new FileOutputStream(mypath);
+
+            // Use the compress method on the BitMap object to write image to
+            // the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.close();
+
+            startActivity(new Intent(MainActivity.this,PrintQRActivity.class));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return directory.getAbsolutePath();
     }
 
     @Override
@@ -384,9 +516,13 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     .show();
             return true;
 
-        }else if(id == R.id.nav_my_delivery){
+        } else if (id == R.id.nav_my_delivery) {
 
             startActivity(new Intent(this, My_Deliveries.class));
+
+        } else if (id == R.id.nav_scan_return) {
+
+            startActivity(new Intent(this, ScanReturnActivity.class));
 
         }
         return true;
@@ -654,6 +790,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     String receiver_phone = obj.getString("receiver_phone");
 
                                     accepted = obj.getString("status");
+                                    app.setPackage_from(pickup_name);
+                                    app.setPackage_to(dropoff_name);
 
                                     to = pickup_name;
                                     from = receiver_phone;

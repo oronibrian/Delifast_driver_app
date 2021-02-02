@@ -3,14 +3,11 @@
     xmlns:tools = "http://schemas.android.com/tools"
     tools:showIn= "navigation_view" >
     <group android:checkableBehavior= "single" >
+
         <item
-            android:id= "@+id/nav_camera"
-            android:icon= "@drawable/barin"
-            android:title= "Pack" />
-        <item
-            android:id= "@+id/nav_gallery"
+            android:id= "@+id/nav_scan_return"
             android:icon= "@drawable/barout"
-            android:title= "Return" />
+            android:title= "Scan Return" />
 
         <item
             android:id= "@+id/nav_my_delivery"
