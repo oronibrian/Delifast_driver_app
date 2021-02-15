@@ -2,6 +2,8 @@ package com.zap.zapdriver;
 
 import android.app.Application;
 
+import com.google.android.gms.maps.model.LatLng;
+
 public class DriverApplication extends Application {
 
 
@@ -14,6 +16,7 @@ public class DriverApplication extends Application {
     String fcm_device_token;
     String auttoken;
     String package_from,package_to;
+    LatLng destination;
 
 
     @Override
@@ -95,6 +98,14 @@ public class DriverApplication extends Application {
 
     public void setPackage_to(String package_to) {
         this.package_to = package_to;
+    }
+
+    public LatLng getDestination() {
+        return destination;
+    }
+
+    public void setDestination(LatLng destination) {
+        this.destination = destination;
     }
 }
 

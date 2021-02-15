@@ -40,10 +40,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.angads25.toggle.interfaces.OnToggledListener;
@@ -89,7 +91,6 @@ import java.util.Map;
 
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
-import androidmads.library.qrgenearator.QRGSaver;
 
 
 public class MainActivity extends AppCompatActivity implements LocationUtil.GetLocationListener, DirectionFinderListener, NavigationView.OnNavigationItemSelectedListener {
@@ -150,9 +151,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private String androidIdd;
     DatabaseReference usersRef;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         setContentView(R.layout.activity_main);
         checkAndRequestRunTimePermissions();
         getCurrentLocation();
@@ -207,7 +211,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
 
-        Authorize_token();
 
 
         markerPoints = new ArrayList<>();
@@ -235,22 +238,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
 
-        QRGEncoder qrgEncoder = new QRGEncoder("Delivery Package identity: "+app.getPackage_id(), null, QRGContents.Type.TEXT, smallerDimension);
-        // Getting QR-Code as Bitmap
-        bitmap = qrgEncoder.getBitmap();
-        // Setting Bitmap to ImageView
-        qrImage.setImageBitmap(bitmap);
-
-
-        try {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-             bitmap2 = barcodeEncoder.encodeBitmap("content", BarcodeFormat.CODE_128, 600, 400);
-            ImageView imageViewQrCode = (ImageView) findViewById(R.id.barcode_image);
-            imageViewQrCode.setImageBitmap(bitmap2);
-        } catch(Exception e) {
-
-        }
-
 
         tvscan.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 //                        String result = save ? "Image Saved" : "Image Not Saved";
                         saveToInternalSorage(bitmap);
                         saveToInternalSorageBarcode(bitmap2);
-                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
+//                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
 
 
                     } catch (Exception e) {
@@ -299,6 +286,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         Log.e("TAG", "FCM Found: " + token);
                         Log.e("Name", ": " + app.getUserid());
                         app.setFcm_device_token(token);
+                        Authorize_token();
 
 
                     }
@@ -497,7 +485,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         if (id == R.id.nav_send) {
 
-            Toast.makeText(getApplicationContext(), "Link", Toast.LENGTH_LONG).show();
 
             new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
                     .setTopColorRes(R.color.colorPrimary)
@@ -720,7 +707,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             Log.e("acceess", token);
                             app.setAuttoken((token));
 
-//                            Post_Device_fcm(token);
+                            Post_Device_fcm(token);
 
 
                         } catch (JSONException e) {
@@ -810,6 +797,24 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                         sendRequest();
                                     }
 
+
+                                }
+
+
+                                QRGEncoder qrgEncoder = new QRGEncoder("Delivery Package identity: " + app.getPackage_id(), null, QRGContents.Type.TEXT, 1000);
+                                // Getting QR-Code as Bitmap
+                                bitmap = qrgEncoder.getBitmap();
+                                // Setting Bitmap to ImageView
+                                qrImage.setImageBitmap(bitmap);
+
+
+                                try {
+                                    BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                                    bitmap2 = barcodeEncoder.encodeBitmap("Delivery Package identity: " + app.getPackage_id(), BarcodeFormat.CODE_128, 600, 400);
+                                    ImageView imageViewQrCode = (ImageView) findViewById(R.id.barcode_image);
+                                    imageViewQrCode.setImageBitmap(bitmap2);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
 
                                 }
 
@@ -1020,6 +1025,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     .title(route.endAddress)
                     .position(route.endLocation)));
 
+            app.setDestination(new LatLng(route.endLocation.latitude, route.endLocation.longitude));
+
             PolylineOptions polylineOptions = new PolylineOptions()
                     .geodesic(true)
                     .color(Color.RED)
@@ -1058,5 +1065,62 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 .show();
 
     }
+
+    private void Post_Device_fcm(String token) {
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("registration_id", token);
+        params.put("type", "android");
+        params.put("name", app.getUsername());
+        params.put("user", app.getUserid());
+        params.put("device_id", androidIdd);
+
+        Log.e("param: ", params.toString());
+
+        Log.e("params", params.toString());
+
+        JsonObjectRequest req = new JsonObjectRequest(Urls.FCM_URL, new JSONObject(params),
+                (JSONObject response) -> {
+                    try {
+
+
+                        Log.e("JsonResponse", response.toString(4));
+
+
+                    } catch (JSONException e) {
+
+
+                        e.printStackTrace();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Log.e("Eror", error.toString());
+
+
+            }
+        }) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(req);
+
+    }
+
 
 }

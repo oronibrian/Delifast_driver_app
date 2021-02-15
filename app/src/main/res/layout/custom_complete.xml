@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/spacing_large">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="320dp"
+            android:layout_height="0dp"
+            android:layout_margin="@dimen/spacing_large"
+            android:layout_weight="1"
+            android:visibility="visible"
+            android:background="@drawable/round_border"
+            app:cardCornerRadius="6dp"
+            app:cardElevation="6dp">
+
+            <com.simmorsal.library.ConcealerNestedScrollView
+                android:layout_width="match_parent"
+                android:fillViewport="true"
+
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_bottom_shadow"
+                    android:padding="@dimen/spacing_large">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_middle"
+                        android:gravity="center_vertical"
+                        android:textColor="@android:color/black"
+                        android:text="Ask Receiver for code"
+                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+                        android:textStyle="bold" />
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_margin="@dimen/spacing_middle"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="135dp"
+                        android:layout_marginTop="@dimen/spacing_mlarge"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_middle">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:text="Confirmation Code"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                                android:textColor="@color/grey_40"
+                                android:visibility="visible" />
+
+
+                            <EditText
+                                android:id="@+id/editextcode"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:ems="10"
+                                android:gravity="center_vertical"
+                                android:inputType="number"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
+                                android:textColor="@color/grey_80"
+                                android:textStyle="bold"
+                                android:hint="Enter code"
+                                android:visibility="visible" />
+
+
+
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_mlarge"
+                        app:cardBackgroundColor="@color/grey_5"
+                        app:cardCornerRadius="6dp"
+                        app:cardElevation="0dp"/>
+
+                </LinearLayout>
+
+            </com.simmorsal.library.ConcealerNestedScrollView>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+
+
+            <Button
+                android:id="@+id/btncon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_large"
+                app:elevation="0dp"
+                app:fabSize="normal"
+                android:textColor="@android:color/white"
+                android:background="@drawable/btn_rounded_primary"
+                android:text="ok">
+
+            </Button>
+
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
+
+
+
+

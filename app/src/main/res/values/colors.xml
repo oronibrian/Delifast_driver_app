@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#2c6bc9</color>
+    <color name="colorPrimaryDark">#004198</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentLight">#FF80AB</color>
     <color name="overlay_dark_10">#1A000000</color>
@@ -14,6 +14,9 @@
     <color name="overlay_dark_80">#CC000000</color>
     <color name="overlay_dark_90">#E6000000</color>
     <color name="colorRouteLine">#FF4081</color>
+
+    <color name="colorOrangeLine">#fea418</color>
+
 
 
     <color name="startcolor">@color/colorPrimary</color>

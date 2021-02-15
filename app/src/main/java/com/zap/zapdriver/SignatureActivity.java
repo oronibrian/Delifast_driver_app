@@ -1,10 +1,12 @@
 package com.zap.zapdriver;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -26,6 +29,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SignatureActivity extends AppCompatActivity {
     SignaturePad mSignaturePad;
     private Button mClearButton;
@@ -34,16 +40,17 @@ public class SignatureActivity extends AppCompatActivity {
     TextView txt_from;
     EditText receiver_phone;
 
+    AlertDialog mpesaalertDialog, paybillalertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signature);
 
-        mSignaturePad = (SignaturePad) findViewById(R.id.signature_pad);
+//        mSignaturePad = (SignaturePad) findViewById(R.id.signature_pad);
         app = (DriverApplication) getApplicationContext();
 
-        mClearButton = (Button) findViewById(R.id.clear_button);
+//        mClearButton = (Button) findViewById(R.id.clear_button);
         mSaveButton = (Button) findViewById(R.id.save_button);
         txt_from = findViewById(R.id.txt_from);
         receiver_phone = findViewById(R.id.receiver_phone);
@@ -67,48 +74,85 @@ public class SignatureActivity extends AppCompatActivity {
         checkAssigned();
 
 
-        mSignaturePad.setOnSignedListener(new SignaturePad.OnSignedListener() {
+//        mSignaturePad.setOnSignedListener(new SignaturePad.OnSignedListener() {
+//
+//            @Override
+//            public void onStartSigning() {
+//                //Event triggered when the pad is touched
+//
+//                Toast.makeText(SignatureActivity.this, "Signing", Toast.LENGTH_SHORT).show();
+//
+//            }
 
-            @Override
-            public void onStartSigning() {
-                //Event triggered when the pad is touched
-
-                Toast.makeText(SignatureActivity.this, "Signing", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void onSigned() {
-                //Event triggered when the pad is signed
-
-                mSaveButton.setEnabled(true);
-                mClearButton.setEnabled(true);
-            }
-
-            @Override
-            public void onClear() {
-                //Event triggered when the pad is cleared
-            }
-        });
+//            @Override
+//            public void onSigned() {
+//                //Event triggered when the pad is signed
+//
+//                mSaveButton.setEnabled(true);
+//                mClearButton.setEnabled(true);
+//            }
+//
+//            @Override
+//            public void onClear() {
+//                //Event triggered when the pad is cleared
+//            }
+//        });
 
 
-
-        mClearButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mSignaturePad.clear();
-            }
-        });
+//        mClearButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mSignaturePad.clear();
+//            }
+//        });
 
         mSaveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString());
+
+                String strUserName = receiver_phone.getText().toString();
+                if (strUserName.trim().equals("")) {
+                    Toast.makeText(SignatureActivity.this, "Phone number required ", Toast.LENGTH_SHORT).show();
+                    return;
+                } else {
+                    generateCode(strUserName);
+
+                }
+
 
             }
         });
     }
 
+    private void ComfirmCode() {
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(SignatureActivity.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.custom_complete, null);
+        EditText code = dialogView.findViewById(R.id.editextcode);
+
+        dialogBuilder.setView(dialogView);
+
+
+        Button btncomplete = dialogView.findViewById(R.id.btncon);
+
+        btncomplete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+
+                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString());
+
+
+            }
+        });
+
+        paybillalertDialog = dialogBuilder.create();
+        paybillalertDialog.show();
+
+
+    }
 
     private void checkAssigned() {
 
@@ -201,6 +245,49 @@ public class SignatureActivity extends AppCompatActivity {
 //            }
 //        });
 
+    }
+
+    public void generateCode(String phone) {
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
+                response -> {
+                    // response
+                    Log.e("Response", response);
+
+                    Toast.makeText(SignatureActivity.this, "Code Generated", Toast.LENGTH_SHORT).show();
+                    ComfirmCode();
+
+                },
+                error -> {
+                    // error
+                    Log.d("Error.Response", error.toString());
+
+
+                    Toast.makeText(SignatureActivity.this, "" + error.toString(), Toast.LENGTH_SHORT).show();
+
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("phones", phone);
+                params.put("is_confirmed", "");
+                params.put("package", app.getPackage_id());
+
+                return params;
+            }
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(postRequest);
     }
 
 

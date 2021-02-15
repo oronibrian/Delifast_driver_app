@@ -227,11 +227,11 @@
                         android:id="@+id/btnEndRide"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:background="@drawable/white_round_corner"
                         android:gravity="center"
                         android:text="Complete"
+                        android:background="@drawable/round_bg"
+                        android:textColor="@color/colorOrangeLine"
                         android:tint="@android:color/white"
-                        app:backgroundTint="@color/colorPrimary"
 
                         app:rippleColor="@color/deep_orange_400" />
 
@@ -391,7 +391,7 @@
 
                         <TextView
                             android:id="@+id/tvmenu"
-                            android:layout_width="225dp"
+                            android:layout_width="200dp"
                             android:layout_height="70dp"
                             android:clickable="true"
                             android:drawableTop="@drawable/menu"
