@@ -558,6 +558,8 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
 
 
         String url = Urls.location_update + "" + app.getUserid();
+        Log.e("Location--url", url);
+
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
                 new Response.Listener<String>() {
                     @Override
@@ -570,7 +572,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // error
-                        Log.d("Error.Response", error.toString());
+                        Log.e("Error.Response", error.toString());
                     }
                 }
         ) {
@@ -828,6 +830,8 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 // do something...
+                Log.e("update", "updating loc-........");
+
                 updateLocation(loc);
 
             }

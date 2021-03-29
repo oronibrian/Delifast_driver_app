@@ -17,11 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.button.MaterialButton;
 import com.zap.zapdriver.API.Urls;
 
 import org.json.JSONException;
@@ -88,7 +85,6 @@ public class LoginActivity extends AppCompatActivity {
         final String password = editextpassword.getText().toString();
 
 
-
         //validating inputs
         if (TextUtils.isEmpty(email)) {
             edittextusername.setError("Please enter your email address or phone");
@@ -104,13 +100,13 @@ public class LoginActivity extends AppCompatActivity {
 
             progressDoalog.show();
 
+
             StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
                     response -> {
                         // response
                         Log.e("Response", response);
 
                         parseData(response);
-
 
                         progressDoalog.dismiss();
                     },
@@ -128,8 +124,7 @@ public class LoginActivity extends AppCompatActivity {
                 protected Map<String, String> getParams()
                 {
                     Map<String, String> params = new HashMap<String, String>();
-                    params.put("username", email);
-                    params.put("email", "");
+                    params.put("email", email);
                     params.put("password", password);
 
                     return params;
@@ -155,51 +150,52 @@ public class LoginActivity extends AppCompatActivity {
     public void parseData(String response) {
 
         try {
-            JSONObject jsonObject = new JSONObject(response);
+            JSONObject data = new JSONObject(response);
 
-            JSONObject data = jsonObject.getJSONObject("user");
 
-            if (!jsonObject.getString("token").isEmpty()) {
+            if (!data.getString("access").isEmpty()) {
 
-                String  token = jsonObject.getString("token");
+                String token = data.getString("access");
 
 
                 app.setToken_key(token);
 
+                String id = data.getString("id");
 
-                for (int i = 0; i < data.length(); i++) {
-
-                    String id = data.getString("pk");
-
-                    String name = data.getString("first_name");
-                    String username = data.getString("username");
-
-                    app.setUsername(username);
-                    app.setUserid(id);
-
-                    app.setPassword( editextpassword.getText().toString());
-
-                    SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
-                            Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = preferences.edit();
-                    editor.putString("username", username);
-                    editor.putString("password", editextpassword.getText().toString());
-                    editor.putString("id", id);
-                    editor.apply();
+                String name = data.getString("first_name");
+                String username = data.getString("username");
+                String last_name = data.getString("last_name");
+                String email = data.getString("username");
 
 
+                app.setFirstName(name);
+                app.setLast_name(last_name + "\n" + email);
 
 
-                    Log.e("name",name);
-                }
+                app.setUsername(username);
+                app.setUserid(id);
+
+                app.setPassword(editextpassword.getText().toString());
+
+                SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
+                        Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString("username", username);
+                editor.putString("password", editextpassword.getText().toString());
+                editor.putString("id", id);
+                editor.apply();
 
 
-                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                startActivity(intent);
+                Log.e("name", name);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        } catch (JSONException jsonException) {
+            jsonException.printStackTrace();
         }
+
 
     }
 

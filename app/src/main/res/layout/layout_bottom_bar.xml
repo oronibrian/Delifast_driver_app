@@ -283,10 +283,11 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="@dimen/_100sdp"
                 android:layout_marginStart="@dimen/spacing_medium"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginEnd="@dimen/spacing_medium"
+                android:layout_gravity="center"
                 android:layout_marginBottom="@dimen/spacing_medium"
                 android:background="@color/white"
                 app:cardCornerRadius="@dimen/spacing_small"
@@ -294,11 +295,13 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginStart="@dimen/spacing_medium"
                     android:layout_marginTop="@dimen/spacing_small"
                     android:layout_marginEnd="@dimen/spacing_medium"
                     android:layout_marginBottom="@dimen/spacing_medium"
+                    android:gravity="center"
+
                     android:fontFamily="@font/googlesansregular"
                     android:orientation="vertical">
 
@@ -389,21 +392,32 @@
                             android:textColor="@color/textchild"
                             android:textSize="@dimen/font_small" />
 
-                        <TextView
-                            android:id="@+id/tvmenu"
-                            android:layout_width="200dp"
-                            android:layout_height="70dp"
-                            android:clickable="true"
-                            android:drawableTop="@drawable/menu"
-                            android:drawablePadding="@dimen/spacing_small"
-                            android:focusable="true"
-                            android:drawableTint="@color/colorPrimary"
-                            android:fontFamily="@font/googlesansbold"
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
                             android:gravity="center"
-                            android:padding="@dimen/spacing_small"
-                            android:text="menu"
-                            android:textColor="@color/textchild"
-                            android:textSize="@dimen/font_small" />
+                            android:orientation="vertical">
+
+                            <ImageView
+                                android:layout_width="@dimen/_50sdp"
+                                android:layout_height="@dimen/_30sdp"
+                                android:padding="@dimen/_6sdp"
+                                android:src="@drawable/ic_package_fill"
+
+                                />
+
+
+                            <TextView
+                                android:id="@+id/tvmenu"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/googlesansbold"
+                                android:gravity="center"
+                                android:text="Active Delivery"
+                                android:textColor="@color/textchild"
+                                android:textSize="@dimen/font_small" />
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvcallOrder"

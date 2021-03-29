@@ -20,6 +20,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.gcacace.signaturepad.views.SignaturePad;
@@ -115,7 +116,15 @@ public class SignatureActivity extends AppCompatActivity {
                     Toast.makeText(SignatureActivity.this, "Phone number required ", Toast.LENGTH_SHORT).show();
                     return;
                 } else {
-                    generateCode(strUserName);
+
+                    if (strUserName.startsWith("0")) {
+                        strUserName = strUserName.replaceFirst("0", "+254");
+
+                        generateCode(strUserName);
+                    } else {
+                        generateCode(strUserName);
+
+                    }
 
                 }
 
@@ -140,7 +149,6 @@ public class SignatureActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-//                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
 
                 update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString());
 
@@ -248,10 +256,20 @@ public class SignatureActivity extends AppCompatActivity {
     }
 
     public void generateCode(String phone) {
-        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
-                response -> {
+
+        Log.e("phone", phone.toString());
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("phones", phone);
+        params.put("is_confirmed", "false");
+        params.put("package", app.getPackage_id());
+
+
+        JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, Urls.generate_receiver_code, new JSONObject(params),
+
+                (JSONObject response) -> {
                     // response
-                    Log.e("Response", response);
+                    Log.e("Response", response.toString());
 
                     Toast.makeText(SignatureActivity.this, "Code Generated", Toast.LENGTH_SHORT).show();
                     ComfirmCode();
@@ -259,29 +277,23 @@ public class SignatureActivity extends AppCompatActivity {
                 },
                 error -> {
                     // error
-                    Log.d("Error.Response", error.toString());
+                    Log.e("Error.Response", error.toString());
 
 
                     Toast.makeText(SignatureActivity.this, "" + error.toString(), Toast.LENGTH_SHORT).show();
 
                 }
         ) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("phones", phone);
-                params.put("is_confirmed", "");
-                params.put("package", app.getPackage_id());
-
-                return params;
-            }
 
 
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
+                Map<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
             }
         };
 
@@ -304,6 +316,9 @@ public class SignatureActivity extends AppCompatActivity {
                         // response
                         Log.e("Response", response);
                         Toast.makeText(SignatureActivity.this, "Delivery confirmed", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                        finish();
+
 
                     }
                 },

@@ -18,6 +18,8 @@ public class DriverApplication extends Application {
     String package_from,package_to;
     LatLng destination;
 
+    String firstName,last_name,email;
+
 
     @Override
     public void onCreate() {
@@ -106,6 +108,30 @@ public class DriverApplication extends Application {
 
     public void setDestination(LatLng destination) {
         this.destination = destination;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
 

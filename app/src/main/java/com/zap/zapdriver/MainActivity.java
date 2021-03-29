@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
     String to, from = "";
-    TextView source_location, destination_location,tvmenu;
+    TextView source_location, destination_location, tvmenu, textView_details;
     TextView txtFare, txtcustomer_name, tvscan;
     TextView btncall;
     String pacakge;
@@ -158,8 +158,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
         setContentView(R.layout.activity_main);
+
+
         checkAndRequestRunTimePermissions();
         getCurrentLocation();
+
+
         //locationUtilObj = new LocationUtil(this, this);
         initMap();
 
@@ -186,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         tvscan = findViewById(R.id.tvscan);
         tvmenu=findViewById(R.id.tvmenu);
 
+
         tvmenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -210,9 +215,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         String pass = sharedPreferences.getString("password", "");
 
 
-
-
-
         markerPoints = new ArrayList<>();
 
 
@@ -228,6 +230,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             app.setUserid(id);
             app.setPassword(pass);
 
+            Request_token(user, pass);
+
+
             Log.e("Name: ", app.getUsername());
         }
 
@@ -235,8 +240,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         int smallerDimension = width < height ? width : height;
         smallerDimension = 1000;
         Log.e("Size: ",String.valueOf(smallerDimension));
-
-
 
 
         tvscan.setOnClickListener(new View.OnClickListener() {
@@ -250,6 +253,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         saveToInternalSorage(bitmap);
                         saveToInternalSorageBarcode(bitmap2);
 //                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
+                        PickPackage(app.getPackage_id(), app.getUserid());
 
 
                     } catch (Exception e) {
@@ -264,10 +268,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         });
 
 
-        checkAssigned();
-
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        View header = navigationView.getHeaderView(0);
+
+        TextView inf = header.findViewById(R.id.textView_details);
+        inf.setText(app.getFirstName() + "\n" + app.getLast_name());
 
 
         FirebaseMessaging.getInstance().getToken()
@@ -337,6 +343,114 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             }
         });
+
+
+    }
+
+    private void Request_token(String email, String password) {
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
+                response -> {
+                    // response
+                    Log.e("Response", response);
+                    try {
+                        JSONObject data = new JSONObject(response);
+
+
+                        if (!data.getString("access").isEmpty()) {
+
+                            String token = data.getString("access");
+
+                            app.setAuttoken(token);
+
+                            checkAssigned();
+
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                },
+                error -> {
+                    // error
+                    Log.d("Error.Response", error.toString());
+
+
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("email", email);
+                params.put("password", password);
+
+                return params;
+            }
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(postRequest);
+
+    }
+
+    private void updatePostLocation(String location) {
+
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("location", location);
+
+
+        String url = Urls.location_update + "" + app.getUserid();
+        Log.e("Location--url", url);
+        Log.e("Location--param", location);
+
+        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(params),
+
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // response
+                        Log.e("Location--updated", response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.e("Error.Response", error.toString());
+                    }
+                }
+        ) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+
+        queue.add(putRequest);
 
 
     }
@@ -453,6 +567,17 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         latLng[0] = location.getLatitude();
         latLng[1] = location.getLongitude();
 
+
+        new Handler().postDelayed(new Runnable() {
+            public void run() {
+                // do something...
+                Log.e("update", "updating loc-........");
+
+                updatePostLocation(location.getLatitude() + "," + location.getLongitude());
+
+            }
+        }, 20000);
+
         if (marker == null) {
             marker = new PicassoMarker(googleMapHomeFrag.addMarker(new MarkerOptions().position(new LatLng(latLng[0], latLng[1]))));
             Picasso.get().load(R.drawable.riderremove).resize(80, 80)
@@ -542,14 +667,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
      * if not granted already
      */
     private void checkAndRequestRunTimePermissions() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            // Marshmallow+
+        // Marshmallow+
 
-            if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                        REQUEST_CODE_PERMISSION_MULTIPLE);
+        if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    REQUEST_CODE_PERMISSION_MULTIPLE);
 
-            }
         }
 
 
@@ -819,6 +942,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 }
 
 
+                            }else{
+                                btnEndRide.setVisibility(View.GONE);
+
                             }
 
                         } catch (JSONException e) {
@@ -844,10 +970,21 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                     }
                 }
+        ) {
 
 
-        );
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
 
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
 
         //creating a request queue
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -896,6 +1033,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     public void onClick(View v) {
 
                         rejectPackage(app.getPackage_id(), app.getUserid());
+
                         checkAssigned();
 
 
@@ -903,8 +1041,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 })
                 .show();
     }
-
-
 
 
     private void sendRequest() {
@@ -925,7 +1061,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             e.printStackTrace();
         }
     }
-
 
 
     public void acceptPackage(String package_id, String rider_id) {
@@ -957,6 +1092,33 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
         String url = Urls.rejectrequest + "/" + package_id + "/" + rider_id;
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
+    public void PickPackage(String package_id, String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+        Log.e("Picking", "picking");
+
+
+        String url = Urls.pickrequest + "/" + package_id + "/" + rider_id;
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
@@ -1056,7 +1218,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 .setPositiveButton("Go Online", new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Toast.makeText(getApplicationContext(), "positive clicked", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Back Online", Toast.LENGTH_SHORT).show();
 
                         labeledSwitch.isOn();
                         labeledSwitch.setOn(true);

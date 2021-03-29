@@ -223,6 +223,7 @@ public class PrintQRActivity extends AppCompatActivity {
                 startActivity(i);
                 finish();
 
+
             }
         });
 
