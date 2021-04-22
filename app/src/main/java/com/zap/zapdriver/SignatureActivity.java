@@ -23,7 +23,6 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.github.gcacace.signaturepad.views.SignaturePad;
 import com.zap.zapdriver.API.Urls;
 
 import org.json.JSONArray;
@@ -34,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SignatureActivity extends AppCompatActivity {
-    SignaturePad mSignaturePad;
     private Button mClearButton;
     private Button mSaveButton;
     DriverApplication app;
@@ -254,6 +252,7 @@ public class SignatureActivity extends AppCompatActivity {
 //        });
 
     }
+
 
     public void generateCode(String phone) {
 

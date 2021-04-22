@@ -63,7 +63,7 @@ import java.util.UUID;
 public class PrintQRActivity extends AppCompatActivity {
     DriverApplication app;
     TextView content;
-    Button acceptBtn;
+    Button acceptBtn, acceptBtnContinue;
     // will show the statuses like bluetooth open, close or data sent
     TextView myLabel;
 
@@ -101,9 +101,21 @@ public class PrintQRActivity extends AppCompatActivity {
         content.setText(app.getPackage_from() + "\n " + app.getPackage_to());
         acceptBtn = findViewById(R.id.acceptBtn);
         myLabel = (TextView) findViewById(R.id.label);
+        acceptBtnContinue = findViewById(R.id.acceptBtnContinue);
 
 
         findBT();
+
+
+        acceptBtnContinue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                createPdf();
+                showDialog(PrintQRActivity.this);
+
+            }
+        });
 
         acceptBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,6 +200,7 @@ public class PrintQRActivity extends AppCompatActivity {
 
                 createPdf();
                 showDialog(PrintQRActivity.this);
+
 
             }
         });
@@ -510,6 +523,7 @@ public class PrintQRActivity extends AppCompatActivity {
         intent.setDataAndType(data, "application/pdf");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
+        
 
 
     }
@@ -546,6 +560,11 @@ public class PrintQRActivity extends AppCompatActivity {
                         break;
                     }
                 }
+            } else {
+                myLabel.setText("Printer not Found ");
+                acceptBtnContinue.setVisibility(View.VISIBLE);
+                acceptBtn.setVisibility(View.GONE);
+
             }
 
             myLabel.setText("Printer  Found " + mmDevice.getName());

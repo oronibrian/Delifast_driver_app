@@ -74,6 +74,9 @@ dependencies {
     implementation 'com.github.DantSu:ESCPOS-ThermalPrinter-Android:2.0.10'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.github.ybq:Android-SpinKit:1.4.0'
+    implementation 'com.androidstudy:daraja:1.0.2'
+
 
 }
 apply plugin: 'com.google.gms.google-services'

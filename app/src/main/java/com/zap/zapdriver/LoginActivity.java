@@ -181,6 +181,11 @@ public class LoginActivity extends AppCompatActivity {
                         Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putString("username", username);
+
+                editor.putString("name", name);
+                editor.putString("last_name", last_name);
+                editor.putString("email", email);
+
                 editor.putString("password", editextpassword.getText().toString());
                 editor.putString("id", id);
                 editor.apply();

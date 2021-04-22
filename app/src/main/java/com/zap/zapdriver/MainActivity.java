@@ -2,6 +2,9 @@ package com.zap.zapdriver;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -9,8 +12,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,12 +28,14 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -37,6 +45,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
@@ -51,6 +60,7 @@ import com.android.volley.toolbox.Volley;
 import com.github.angads25.toggle.interfaces.OnToggledListener;
 import com.github.angads25.toggle.model.ToggleableView;
 import com.github.angads25.toggle.widget.LabeledSwitch;
+import com.github.ybq.android.spinkit.SpinKitView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -87,6 +97,7 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import androidmads.library.qrgenearator.QRGContents;
@@ -121,16 +132,20 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private ProgressDialog progressDialog;
     LabeledSwitch labeledSwitch;
     RelativeLayout map_id;
-    LinearLayout ll_straight, ll_to_from, ll_call;
+    LinearLayout ll_straight, ll_to_from, ll_call, ll_buttons;
     LinearLayout card_id_package, card_id_package_serach;
     RelativeLayout ll_main;
     MarkerOptions markerOptions;
 
-    private String inputValue;
+    String my_current_location = "";
     private String savePath = Environment.getExternalStorageDirectory().getPath() + "/QRCode/";
-    private Bitmap bitmap,bitmap2;
+    private Bitmap bitmap, bitmap2;
     private QRGEncoder qrgEncoder;
     private ImageView qrImage;
+
+    LatLng rider_location;
+
+    SpinKitView spin_kit;
 
 
     View v;
@@ -150,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     private String androidIdd;
     DatabaseReference usersRef;
+
+    Boolean asigned = false;
 
 
     @Override
@@ -188,14 +205,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         qrImage = findViewById(R.id.qr_image);
         tvscan = findViewById(R.id.tvscan);
-        tvmenu=findViewById(R.id.tvmenu);
+        tvmenu = findViewById(R.id.tvmenu);
+        spin_kit = findViewById(R.id.spin_kit);
+        ll_buttons = findViewById(R.id.ll_buttons);
+
+
+//get the values of the settings options
 
 
         tvmenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(MainActivity.this,My_Deliveries.class));
+                startActivity(new Intent(MainActivity.this, My_Deliveries.class));
 
             }
         });
@@ -214,6 +236,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         String id = sharedPreferences.getString("id", "");
         String pass = sharedPreferences.getString("password", "");
 
+        String name = sharedPreferences.getString("name", "");
+
+        String last_name = sharedPreferences.getString("last_name", "");
+        String email = sharedPreferences.getString("email", "");
+
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View header = navigationView.getHeaderView(0);
+
+        TextView inf = header.findViewById(R.id.textView_details);
+        inf.setText(name + " " + last_name + "\n" + email);
+
 
         markerPoints = new ArrayList<>();
 
@@ -226,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             finish();
 
         } else {
-            app.setUsername(user);
+            app.setUsername(email);
             app.setUserid(id);
             app.setPassword(pass);
 
@@ -234,6 +269,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
             Log.e("Name: ", app.getUsername());
+            Log.e("Pass: ", app.getPassword());
+
         }
 
 
@@ -268,20 +305,13 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         });
 
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        View header = navigationView.getHeaderView(0);
-
-        TextView inf = header.findViewById(R.id.textView_details);
-        inf.setText(app.getFirstName() + "\n" + app.getLast_name());
-
 
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(new OnCompleteListener<String>() {
                     @Override
                     public void onComplete(@NonNull Task<String> task) {
                         if (!task.isSuccessful()) {
-                            Log.w("TAG", "Fetching FCM registration token failed", task.getException());
+                            Log.e("TAG", "Fetching FCM registration token failed", task.getException());
                             return;
                         }
 
@@ -292,7 +322,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         Log.e("TAG", "FCM Found: " + token);
                         Log.e("Name", ": " + app.getUserid());
                         app.setFcm_device_token(token);
-                        Authorize_token();
+//                        Post_Device_fcm(token);
+
+//                        Authorize_token();
 
 
                     }
@@ -338,7 +370,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         btnEndRide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+
+
+                checkPaid();
 
 
             }
@@ -347,13 +381,120 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     }
 
+
+    private void checkPaid() {
+
+        Log.e("url", Urls.checkPaid + "" + app.getPackage_id().toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.checkPaid + "" + app.getPackage_id(),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+                        Log.e("response", response.toString());
+
+                        try {
+
+                            Log.e("response", response.toString());
+
+                            JSONObject jsonArray = new JSONObject(response);
+
+                            String paid = jsonArray.getString("msg");
+
+                            if (paid.equalsIgnoreCase("True")) {
+
+                                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                            } else {
+                                Toast.makeText(MainActivity.this, "No payment found", Toast.LENGTH_SHORT).show();
+
+
+                                stkPush();
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("error", e.toString());
+
+
+                        }
+
+
+                    }
+
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //displaying the error in toast if occurrs
+                        Log.e("Error", "Error: " + error
+                                + "\nCause " + error.getCause()
+                                + "\nmessage" + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+
+
+        );
+
+
+        //creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //adding the string request to request queue
+        requestQueue.add(stringRequest);
+
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
+
+    }
+
+
+    private void stkPush() {
+        // custom dialog
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.stk_push_layout, null);
+        dialogBuilder.setView(dialogView);
+
+        EditText stk_number = dialogView.findViewById(R.id.stk_mpesanumber);
+
+
+        Button btncomplete = dialogView.findViewById(R.id.buttontn);
+
+        btncomplete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String value = "+254" + stk_number.getText().toString().substring(1);
+
+                stkPushMethod(value);
+
+            }
+        });
+
+        dialogBuilder.create();
+        dialogBuilder.show();
+    }
+
+
     private void Request_token(String email, String password) {
 
 
         StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
                 response -> {
                     // response
-                    Log.e("Response", response);
+                    Log.e("Auth", response);
                     try {
                         JSONObject data = new JSONObject(response);
 
@@ -362,9 +503,18 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                             String token = data.getString("access");
 
+                            SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
+                                    Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("token", token);
+
+                            editor.apply();
+
                             app.setAuttoken(token);
 
                             checkAssigned();
+                            Post_Device_fcm(token);
+
 
                         }
                     } catch (JSONException e) {
@@ -402,6 +552,57 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
         requestQueue.add(postRequest);
+
+    }
+
+
+    private void stkPushMethod(String payment_phone) {
+
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("payment_phone", payment_phone);
+
+
+        String url = Urls.onlinepayment + "" + app.getPackage_id();
+        Log.e("Location--url", url);
+        Log.e("--param", payment_phone);
+
+        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(params),
+
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // response
+                        Log.e("Location--updated", response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.e("Error.Response", error.toString());
+                    }
+                }
+        ) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+
+        queue.add(putRequest);
+
 
     }
 
@@ -516,6 +717,28 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             locationUtilObj.checkLocationSettings();
             locationUtilObj.restart_location_update();
         }
+
+        if (!asigned) {
+
+            SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
+            String user = sharedPreferences.getString("token", "");
+            app.setAuttoken(user);
+
+            handler.postDelayed(runnable = new Runnable() {
+                public void run() {
+                    //do something
+
+                    Log.e("checking", "............................");
+
+                    checkAssigned();
+
+
+                    handler.postDelayed(runnable, delay);
+                }
+            }, delay);
+
+
+        }
     }
 
     private void initMap() {
@@ -538,8 +761,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         return;
                     }
 
-                    googleMapHomeFrag.setMyLocationEnabled(false);
+                    googleMapHomeFrag.setMyLocationEnabled(true);
                     googleMapHomeFrag.getUiSettings().setMyLocationButtonEnabled(true);
+
 
                     if (driverLatLng != null) {
                         if (googleMapHomeFrag != null) {
@@ -568,6 +792,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         latLng[1] = location.getLongitude();
 
 
+        rider_location = new LatLng(location.getLatitude(), location.getLongitude());
+
+        Log.e("rider_location", "rider_location-....." + rider_location);
+
+
         new Handler().postDelayed(new Runnable() {
             public void run() {
                 // do something...
@@ -575,14 +804,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                 updatePostLocation(location.getLatitude() + "," + location.getLongitude());
 
+
             }
         }, 20000);
+
+        float bearing = (float) bearingBetweenLocations(rider_location, rider_location);
 
         if (marker == null) {
             marker = new PicassoMarker(googleMapHomeFrag.addMarker(new MarkerOptions().position(new LatLng(latLng[0], latLng[1]))));
             Picasso.get().load(R.drawable.riderremove).resize(80, 80)
                     .into(marker);
             googleMapHomeFrag.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latLng[0], latLng[1]), 12.0f));
+
+
         }
 
         if ((latLng[0] != -1 && latLng[0] != 0) && (latLng[1] != -1 && latLng[1] != 0)) {
@@ -763,7 +997,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         startPosition.latitude * (1 - t) + (finalPosition.getLatitude()) * t,
                         startPosition.longitude * (1 - t) + (finalPosition.getLongitude()) * t);
                 myMarker.setPosition(currentPosition);
-                // myMarker.setRotation(finalPosition.getBearing());
+                myMarker.setRotation(finalPosition.getBearing());
 
 
                 // Repeat till progress is completeelse
@@ -816,7 +1050,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private void Authorize_token() {
 
 
-        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Token,
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -881,11 +1115,20 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                         try {
 
-                            Log.e("response", response.toString());
+                            Log.e("Package", response.toString());
 
                             JSONArray jsonArray = new JSONArray(response);
 
                             if (jsonArray.length() > 0) {
+                                spin_kit.setVisibility(View.GONE);
+                                asigned = true;
+
+                                btnEndRide.setVisibility(View.VISIBLE);
+                                ll_straight.setVisibility(View.VISIBLE);
+                                ll_to_from.setVisibility(View.VISIBLE);
+                                ll_call.setVisibility(View.VISIBLE);
+                                ll_buttons.setVisibility(View.VISIBLE);
+
                                 for (int i = 0; i < jsonArray.length(); i++) {
 
                                     JSONObject obj = jsonArray.getJSONObject(i);
@@ -910,12 +1153,35 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+                                    txtcustomer_name.setText(title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
 
                                     pacakge = title;
 
-                                    if (!accepted.equalsIgnoreCase("Picked")) {
+                                    if (accepted.equalsIgnoreCase("Assigned")) {
                                         assignedDialog();
+
+                                        // prepare intent which is triggered if the
+
+                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
+                                        builder.setSmallIcon(android.R.drawable.ic_dialog_alert);
+                                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+                                        builder.setContentIntent(pendingIntent);
+                                        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+                                        builder.setContentTitle("Zap Delivery Request");
+                                        builder.setContentText("You have an active delivery request.");
+                                        builder.setSubText("Tap to view the request.");
+
+                                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+                                        // Will display the notification in the notification bar
+                                        notificationManager.notify(1, builder.build());
+                                    } else if (accepted.equalsIgnoreCase("accepted")) {
+
+
+                                        getPosition();
+
+
                                     } else {
                                         sendRequest();
                                     }
@@ -942,8 +1208,13 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 }
 
 
-                            }else{
+                            } else {
                                 btnEndRide.setVisibility(View.GONE);
+                                ll_straight.setVisibility(View.GONE);
+                                ll_to_from.setVisibility(View.GONE);
+                                ll_call.setVisibility(View.GONE);
+                                ll_buttons.setVisibility(View.GONE);
+
 
                             }
 
@@ -1003,6 +1274,18 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     }
 
+    public static String getAddressFromLatLng(Context context, LatLng latLng) {
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(context, Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+            return addresses.get(0).getAddressLine(0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
     public void assignedDialog() {
         new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
@@ -1043,6 +1326,30 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     }
 
 
+    private void sendRequestToPickup(String toPickupname) {
+
+        String origin = toPickupname.toString();
+        String destination = source_location.getText().toString();
+
+        Log.e("Origin", origin);
+        Log.e("Destination", destination);
+
+
+        if (origin.isEmpty()) {
+            Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (destination.isEmpty()) {
+            Toast.makeText(this, "Please enter destination!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            new DirectionFinder(MainActivity.this, origin, destination).execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void sendRequest() {
         String origin = source_location.getText().toString();
         String destination = destination_location.getText().toString();
@@ -1073,6 +1380,52 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     public void onResponse(String response) {
                         // response
                         Log.d("Response", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
+    public void getPosition() {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.rider_location + "" + app.getUserid();
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        try {
+                            JSONArray jsonArray = new JSONArray(response);
+
+                            for (int i = 0; i < jsonArray.length(); i++) {
+
+                                JSONObject obj = jsonArray.getJSONObject(i);
+
+                                String[] location = obj.getString("location").split(",");
+                                Log.e("-----location", location[0]);
+
+                                String toPickupname = getAddressFromLatLng(MainActivity.this, new LatLng(Double.parseDouble(location[0]), Double.parseDouble(location[1])));
+                                sendRequestToPickup(toPickupname);
+
+
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        // response
                     }
                 },
                 new Response.ErrorListener() {
@@ -1174,7 +1527,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             mMap.moveCamera(CameraUpdateFactory.newLatLng(route.startLocation));
 
 
-            txtcustomer_name.setText("Package: " + pacakge + "\n Distance: " + route.distance.text + " \nTime: " + route.duration.text);
+            txtcustomer_name.setText("Distance: " + route.distance.text + " Time: " + route.duration.text);
 
 
             originMarkers.add(mMap.addMarker(new MarkerOptions()
@@ -1238,11 +1591,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         params.put("user", app.getUserid());
         params.put("device_id", androidIdd);
 
-        Log.e("param: ", params.toString());
+        Log.e("param: ", new JSONObject(params).toString());
 
-        Log.e("params", params.toString());
 
-        JsonObjectRequest req = new JsonObjectRequest(Urls.FCM_URL, new JSONObject(params),
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, Urls.FCM_URL, new JSONObject(params),
                 (JSONObject response) -> {
                     try {
 

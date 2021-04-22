@@ -43,21 +43,20 @@
                     android:visibility="gone" />
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:background="@drawable/bg_bottom_shadow"
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/txtcustomer_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="2"
                         android:padding="@dimen/spacing_medium"
-                        android:singleLine="true"
-                        android:textSize="@dimen/spacing_large"
+                        android:gravity="center"
+                        android:textSize="@dimen/_11sdp"
                         android:textStyle="bold"
                         tools:text="GJ 2XX - F4F4" />
 
@@ -65,17 +64,15 @@
                         android:id="@+id/txtFare"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:ellipsize="end"
                         android:maxLines="1"
-                        android:paddingStart="@dimen/spacing_medium"
-                        android:paddingLeft="@dimen/spacing_medium"
+                        android:gravity="center"
+
                         android:singleLine="true"
                         android:textSize="@dimen/spacing_large"
                         android:textStyle="bold"
-                        tools:text="9875865215" />
+                        tools:text="ksh" />
                 </LinearLayout>
-
 
                 <LinearLayout
                     android:id="@+id/ll_call"
@@ -96,6 +93,11 @@
                 android:layout_height="12dp"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:visibility="visible" />
+
+            <View
+                android:layout_width="wrap_content"
+                android:layout_height="0.2dp"
+                android:background="@color/view_color" />
 
             <!--Second Phase-->
 
@@ -270,6 +272,14 @@
 
                 </LinearLayout>
 
+                <com.github.ybq.android.spinkit.SpinKitView
+                    android:id="@+id/spin_kit"
+                    style="@style/SpinKitView.Large.Pulse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    app:SpinKit_Color="@color/colorAccent" />
+
 
             </LinearLayout>
 
@@ -353,6 +363,7 @@
                         android:visibility="invisible" />
 
                     <LinearLayout
+                        android:id="@+id/ll_buttons"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginTop="@dimen/spacing_small"

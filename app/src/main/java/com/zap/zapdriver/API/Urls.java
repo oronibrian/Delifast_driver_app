@@ -29,4 +29,12 @@ public class Urls {
 
     public static final String driverassignedpackages = Base2 + "api/v1/driverassignedpackages/?driver_assigned=";
 
+    public static final String rider_location = Base2 + "api/v1/live_track?id=";
+
+    public static final String checkPaid = Base2 + "ispackagepaid/";
+
+    public static final String onlinepayment = Base + "onlinepayment/";
+
+
+
 }
