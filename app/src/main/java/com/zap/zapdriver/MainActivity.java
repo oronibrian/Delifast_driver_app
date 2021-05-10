@@ -50,6 +50,7 @@ import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -72,13 +73,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
+import com.pusher.pushnotifications.PushNotifications;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
@@ -115,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private boolean isDeninedRTPs = true;       // initially true to prevent anim(2)
     private boolean showRationaleRTPs = false;
     private float start_rotation;
+    AlertDialog mpesaalertDialog, paybillalertDialog;
 
 
     Button btnEndRide;
@@ -267,9 +273,25 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             Request_token(user, pass);
 
+            Log.e("email: ",String.valueOf(email));
 
-            Log.e("Name: ", app.getUsername());
-            Log.e("Pass: ", app.getPassword());
+
+//        PushNotifications.start(getApplicationContext(), BuildConfig.INSTANCE_ID);
+
+//        PushNotifications.start(getApplicationContext(), "d8b10467-89ac-46cf-a38c-f1917d082d1d");
+            PushNotifications.start(getApplicationContext(), "d8b10467-89ac-46cf-a38c-f1917d082d1d");
+
+//        PushNotifications.addDeviceInterest("hello");
+            PushNotifications.stop();
+//        PushNotifications.removeDeviceInterest("example");
+            PushNotifications.clearDeviceInterests();
+            PushNotifications.addDeviceInterest(app.getUsername());
+
+
+            Log.e("interes",PushNotifications.getDeviceInterests().toString());
+
+
+
 
         }
 
@@ -319,8 +341,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         String token = task.getResult();
 
                         // Log and toast
-                        Log.e("TAG", "FCM Found: " + token);
-                        Log.e("Name", ": " + app.getUserid());
+                        Log.i("TAG", "FCM Found: " + token);
+                        Log.i("Name", ": " + app.getUserid());
+                        Log.i("email", ": " + app.getUsername());
+
                         app.setFcm_device_token(token);
 //                        Post_Device_fcm(token);
 
@@ -329,6 +353,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                     }
                 });
+
+
         btncall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -392,11 +418,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     @Override
                     public void onResponse(String response) {
 
-                        Log.e("response", response.toString());
+                        Log.i("response", response.toString());
 
                         try {
 
-                            Log.e("response", response.toString());
+                            Log.i("response", response.toString());
 
                             JSONObject jsonArray = new JSONObject(response);
 
@@ -483,8 +509,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             }
         });
 
-        dialogBuilder.create();
-        dialogBuilder.show();
+        paybillalertDialog = dialogBuilder.create();
+        paybillalertDialog.show();
     }
 
 
@@ -565,8 +591,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         params.put("payment_phone", payment_phone);
 
 
-        String url = Urls.onlinepayment + "" + app.getPackage_id();
-        Log.e("Location--url", url);
+        String url = Urls.onlinepayment + "" + app.getPackage_id() + "/";
+        Log.e("payment_phone--url", url);
         Log.e("--param", payment_phone);
 
         JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(params),
@@ -575,7 +601,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     @Override
                     public void onResponse(JSONObject response) {
                         // response
-                        Log.e("Location--updated", response.toString());
+                        Log.e("payment_phone", response.toString());
+                        paybillalertDialog.dismiss();
+
                     }
                 },
                 new Response.ErrorListener() {
@@ -583,6 +611,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     public void onErrorResponse(VolleyError error) {
                         // error
                         Log.e("Error.Response", error.toString());
+                        paybillalertDialog.dismiss();
+
                     }
                 }
         ) {
@@ -601,6 +631,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         };
 
+        putRequest.setRetryPolicy(new DefaultRetryPolicy(
+                5000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(putRequest);
 
 
@@ -712,13 +746,16 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     protected void onResume() {
         super.onResume();
 
+        Log.e("IsASSIGNED", asigned.toString());
+
+
         getCurrentLocation();
         if (locationUtilObj != null /*&& !locationUtilObj.isGoogleAPIConnected()*/) {
             locationUtilObj.checkLocationSettings();
             locationUtilObj.restart_location_update();
         }
 
-        if (!asigned) {
+        if (asigned = false) {
 
             SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
             String user = sharedPreferences.getString("token", "");
@@ -737,6 +774,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 }
             }, delay);
 
+
+        } else {
+            Log.e("Do Nothing", "............................");
 
         }
     }
@@ -1510,6 +1550,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             for (Polyline polylinePath : polyLinePaths) {
                 polylinePath.remove();
             }
+            progressDialog.dismiss();
+
         }
 
 
