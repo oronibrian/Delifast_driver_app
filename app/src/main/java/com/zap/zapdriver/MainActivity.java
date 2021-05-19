@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LatLng rider_location;
 
     SpinKitView spin_kit;
+    LinearLayout ll_navigation;
 
 
     View v;
@@ -214,6 +215,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         tvmenu = findViewById(R.id.tvmenu);
         spin_kit = findViewById(R.id.spin_kit);
         ll_buttons = findViewById(R.id.ll_buttons);
+
+
+        ll_navigation = findViewById(R.id.ll_navigation);
 
 
 //get the values of the settings options
@@ -294,6 +298,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
         }
+
+
+        ll_navigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                startActivity(new Intent(getApplicationContext(), TurnByNavigation.class));
+                startActivity(new Intent(getApplicationContext(), TurnNavigation2.class));
+
+
+
+            }
+        });
 
 
         int smallerDimension = width < height ? width : height;

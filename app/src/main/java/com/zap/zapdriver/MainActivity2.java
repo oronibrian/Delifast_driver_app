@@ -122,6 +122,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
 
     private String androidIdd;
     DatabaseReference usersRef;
+    LinearLayout ll_navigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +136,9 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         txtFare = findViewById(R.id.txtFare);
         txtcustomer_name = findViewById(R.id.txtcustomer_name);
         btncall = findViewById(R.id.btncall);
+
+
+        ll_navigation = findViewById(R.id.ll_navigation);
 
         map_id = findViewById(R.id.map_id);
         ll_straight = findViewById(R.id.ll_straight);
@@ -275,6 +279,17 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
                     return;
                 }
                 startActivity(callIntent);
+
+            }
+        });
+
+
+        ll_navigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                startActivity(new Intent(getApplicationContext(), TurnByNavigation.class));
+
 
             }
         });
