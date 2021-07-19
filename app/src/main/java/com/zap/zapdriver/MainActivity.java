@@ -1,11 +1,17 @@
 package com.zap.zapdriver;
 
+import static android.app.Notification.DEFAULT_SOUND;
+import static android.app.Notification.DEFAULT_VIBRATE;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -46,6 +52,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
@@ -73,13 +80,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
@@ -99,7 +103,13 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -107,6 +117,8 @@ import java.util.Map;
 
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
+import tech.gusavila92.websocketclient.WebSocketClient;
+import timber.log.Timber;
 
 
 public class MainActivity extends AppCompatActivity implements LocationUtil.GetLocationListener, DirectionFinderListener, NavigationView.OnNavigationItemSelectedListener {
@@ -122,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private float start_rotation;
     AlertDialog mpesaalertDialog, paybillalertDialog;
 
+    private WebSocketClient webSocketClient;
 
     Button btnEndRide;
     ArrayList<LatLng> markerPoints;
@@ -277,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             Request_token(user, pass);
 
-            Log.e("email: ",String.valueOf(email));
+            Log.e("email: ", String.valueOf(email));
 
 
 //        PushNotifications.start(getApplicationContext(), BuildConfig.INSTANCE_ID);
@@ -292,9 +305,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             PushNotifications.addDeviceInterest(app.getUsername());
 
 
-            Log.e("interes",PushNotifications.getDeviceInterests().toString());
-
-
+            Log.e("interes", PushNotifications.getDeviceInterests().toString());
 
 
         }
@@ -304,9 +315,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
-//                startActivity(new Intent(getApplicationContext(), TurnByNavigation.class));
                 startActivity(new Intent(getApplicationContext(), TurnNavigation2.class));
-
 
 
             }
@@ -315,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         int smallerDimension = width < height ? width : height;
         smallerDimension = 1000;
-        Log.e("Size: ",String.valueOf(smallerDimension));
+        Log.e("Size: ", String.valueOf(smallerDimension));
 
 
         tvscan.setOnClickListener(new View.OnClickListener() {
@@ -342,7 +351,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             }
         });
-
 
 
         FirebaseMessaging.getInstance().getToken()
@@ -422,12 +430,21 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         });
 
 
+        //Websocket listening for request
+
+
+        createWebSocketClient(app.getUserid(),"18.159.15.240");
+
+
+
     }
+
+
 
 
     private void checkPaid() {
 
-        Log.e("url", Urls.checkPaid + "" + app.getPackage_id().toString());
+        Timber.e(Urls.checkPaid + "" + app.getPackage_id().toString());
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.checkPaid + "" + app.getPackage_id(),
                 new Response.Listener<String>() {
@@ -724,7 +741,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.close();
 
-            startActivity(new Intent(MainActivity.this,PrintQRActivity.class));
+            startActivity(new Intent(MainActivity.this, PrintQRActivity.class));
 
 
         } catch (Exception e) {
@@ -749,8 +766,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             // the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.close();
-
-            startActivity(new Intent(MainActivity.this,PrintQRActivity.class));
 
 
         } catch (Exception e) {
@@ -1410,6 +1425,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private void sendRequest() {
         String origin = source_location.getText().toString();
         String destination = destination_location.getText().toString();
+        Log.e("Destination", destination);
+
 
         if (origin.isEmpty()) {
             Toast.makeText(this, "Please enter origin!", Toast.LENGTH_SHORT).show();
@@ -1423,6 +1440,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             new DirectionFinder(MainActivity.this, origin, destination).execute();
         } catch (Exception e) {
             e.printStackTrace();
+            Log.e("direction erro", e.toString());
+
         }
     }
 
@@ -1431,12 +1450,14 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
         String url = Urls.acceptrequest + "/" + package_id + "/" + rider_id;
+        Log.d("Accepted", url);
+
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         // response
-                        Log.d("Response", response);
+                        Log.d("Accepted", response);
                     }
                 },
                 new Response.ErrorListener() {
@@ -1456,6 +1477,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
         String url = Urls.rider_location + "" + app.getUserid();
+
+        Log.e("-----lo url", url);
+
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
@@ -1473,6 +1497,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                                 String toPickupname = getAddressFromLatLng(MainActivity.this, new LatLng(Double.parseDouble(location[0]), Double.parseDouble(location[1])));
                                 sendRequestToPickup(toPickupname);
+
+                                app.setDestination(new LatLng(Double.parseDouble(location[0]), Double.parseDouble(location[1])));
+
+                                Log.e("toPickupname", toPickupname);
+
 
 
                             }
@@ -1695,5 +1724,124 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     }
 
+    private void createWebSocketClient(String username,String address) {
+        URI uri;
+
+
+        try {
+            uri = new URI("ws://18.159.15.240:8001/ws/notification/" + username);
+
+            Log.e("url", uri.toString());
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        webSocketClient = new WebSocketClient(uri) {
+            @Override
+            public void onOpen() {
+                System.out.println("onOpen");
+//                webSocketClient.send("Hello, World!");
+                Log.e("Websocket", "Opened");
+
+            }
+
+            @Override
+            public void onTextReceived(String message) {
+                System.out.println("onTextReceived");
+
+                Log.e("Request", "Request received");
+                Log.e("Request", message);
+
+                MainActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Log.d("UI thread", "I am the UI thread");
+
+                        Toast.makeText(MainActivity.this, "Request received", Toast.LENGTH_SHORT).show();
+                        addNotification();
+
+
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void onBinaryReceived(byte[] data) {
+                System.out.println("onBinaryReceived");
+                Log.e("Request", "onBinaryReceived received");
+
+            }
+
+            @Override
+            public void onPingReceived(byte[] data) {
+                System.out.println("onPingReceived");
+                Log.e("Request", "ping received");
+
+            }
+
+            @Override
+            public void onPongReceived(byte[] data) {
+                System.out.println("onPongReceived");
+            }
+
+            @Override
+            public void onException(Exception e) {
+                System.out.println(e.getMessage());
+                Log.e("wserror", e.getMessage());
+
+            }
+
+            @Override
+            public void onCloseReceived() {
+                System.out.println("onCloseReceived");
+            }
+        };
+
+
+//        webSocketClient.setConnectTimeout(10000);
+//        webSocketClient.setReadTimeout(60000);
+//        webSocketClient.addHeader("Origin", "http://developer.example.com");
+        webSocketClient.enableAutomaticReconnection(5000);
+        webSocketClient.connect();
+    }
+
+    private void addNotification() {
+
+        String CHANNEL_ID = "MESSAGE";
+        String CHANNEL_NAME = "MESSAGE";
+        Intent intent = new Intent(this, MainActivity.class);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(MainActivity.this);
+        PendingIntent pendingIntent = TaskStackBuilder.create(MainActivity.this)
+                .addNextIntent(intent)
+                .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            manager.createNotificationChannel(channel);
+        }
+
+        Notification notification = new NotificationCompat.Builder(MainActivity.this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("New Request")
+                .setStyle(new NotificationCompat.BigTextStyle())
+                .setDefaults(DEFAULT_SOUND | DEFAULT_VIBRATE)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentText("You have been assigned a package\nTap to view details")
+                .setContentIntent(pendingIntent)
+
+                .build();
+        manager.notify(getRandomNumber(), notification); //
+    }
+
+    private static int getRandomNumber() {
+        Date dd = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("mmssSS");
+        String s = ft.format(dd);
+        return Integer.parseInt(s);
+    }
 
 }

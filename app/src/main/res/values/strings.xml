@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Zap Driver</string>
 
-    <string name="google_maps_key">AIzaSyBOMTEba6n0Xc0pUHQLMnEHS6DQ-rfBg64</string>
+    <string name="google_maps_key">AIzaSyD5xkBv6nRmusppkp5r2e6-PNnrBXT30Pg</string>
     <string name="mapbox_access_token">pk.eyJ1Ijoib3JvbmlicmlhbiIsImEiOiJja2FjNjRrcm0xYzhzMndwZ3BkYmQ5MGppIn0.9T-m70QbLECsHt4Fqc9h1w</string>
 
     <string name="user_location_permission_explanation">This app needs location permissions to show its functionality.</string>

@@ -111,8 +111,10 @@ public class PrintQRActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                createPdf();
-                showDialog(PrintQRActivity.this);
+//                createPdf();
+//                showDialog(PrintQRActivity.this);
+                startActivity(new Intent(PrintQRActivity.this, TurnNavigation2.class));
+                finish();
 
             }
         });
@@ -146,12 +148,12 @@ public class PrintQRActivity extends AppCompatActivity {
                                     EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32);
                                     printer
                                             .printFormattedText(
-                                                    "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, PrintQRActivity.this.getResources().getDrawableForDensity(R.drawable.image, DisplayMetrics.DENSITY_MEDIUM)) + "</img>\n" +
+                                                    "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, PrintQRActivity.this.getResources().getDrawableForDensity(R.drawable.zap_cnvte, DisplayMetrics.DENSITY_140)) + "</img>\n" +
                                                             "[L]\n" +
                                                             "[C]<u><font size='big'>Zap Logistics</font></u>\n" +
                                                             "[L]\n" +
                                                             "[C]\n" + mydate +
-
+                                                            "[L]\n" +
                                                             "[C]================================\n" +
                                                             "[L]\n" +
 
@@ -164,9 +166,9 @@ public class PrintQRActivity extends AppCompatActivity {
                                                             "[L]\n" +
                                                             "[C]================================\n" +
                                                             "[L]\n" +
-
-                                                            "[C]<barcode type='ean13' height='10'>000000000000" + app.getPackage_id() + "</barcode>\n" +
-                                                            "[L]\n" +
+//
+//                                                            "[C]<barcode type='ean13' height='10'>000000000000" + app.getPackage_id() + "</barcode>\n" +
+//                                                            "[L]\n" +
 
                                                             "[C]<qrcode size='20'>https://zaplogistics.co.ke/</qrcode>"
                                             );
@@ -198,8 +200,8 @@ public class PrintQRActivity extends AppCompatActivity {
                 }
 
 
-                createPdf();
-                showDialog(PrintQRActivity.this);
+//                createPdf();
+//                showDialog(PrintQRActivity.this);
 
 
             }
@@ -554,9 +556,9 @@ public class PrintQRActivity extends AppCompatActivity {
                         mmDevice = device;
                         Log.e("device:", mmDevice.getName().toString());
 //                        InitPrinter();
-
-
                         acceptBtn.setEnabled(true);
+                        acceptBtnContinue.setEnabled(true);
+
                         break;
                     }
                 }

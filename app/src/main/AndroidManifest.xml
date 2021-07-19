@@ -26,9 +26,10 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".TurnNavigation2"></activity>
-<!--        <activity android:name=".TurnByNavigation" />-->
-
+        <activity
+            android:name=".TurnByNavigation"
+            android:exported="true" />
+        <activity android:name=".TurnNavigation2" /> <!-- <activity android:name=".TurnByNavigation" /> -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_location_tracking" />

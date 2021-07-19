@@ -1,5 +1,9 @@
 package com.zap.zapdriver;
 
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -18,14 +22,15 @@ import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
+import com.mapbox.api.geocoding.v5.MapboxGeocoding;
+import com.mapbox.api.geocoding.v5.models.CarmenFeature;
+import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.location.LocationComponent;
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions;
 import com.mapbox.mapboxsdk.location.modes.CameraMode;
-import com.mapbox.mapboxsdk.location.modes.RenderMode;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -43,10 +48,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
-import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
-
 
 public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCallback, MapboxMap.OnMapClickListener, PermissionsListener {
     // variables for adding location layer
@@ -63,6 +64,7 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
     private Button button;
     DriverApplication app;
     LocationManager mLocationManager;
+    Point dest;
 
 
     @Override
@@ -79,6 +81,8 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
 
         button = findViewById(R.id.startButton);
 
+        destination_name(app.getPackage_to());
+
 
 //
 
@@ -89,57 +93,7 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
         this.mapboxMap = mapboxMap;
 
 
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
-            @Override
-            public void onStyleLoaded(@NonNull Style style) {
-                enableLocationComponent(style);
-
-                addDestinationIconSymbolLayer(style);
-
-
-
-                Location myLocation = getLastKnownLocation();
-                Toast.makeText(TurnNavigation2.this, ""+myLocation.getLatitude(), Toast.LENGTH_LONG).show();
-
-
-
-//                Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-                Point originPoint = Point.fromLngLat(myLocation.getLongitude(),
-                        myLocation.getLatitude());
-
-                Point dest = Point.fromLngLat(app.getDestination().longitude, app.getDestination().latitude);
-
-
-                GeoJsonSource source = mapboxMap.getStyle().getSourceAs("destination-source-id");
-                if (source != null) {
-                    source.setGeoJson(Feature.fromGeometry(dest));
-                }
-
-
-                getRoute(originPoint, dest);
-                button.setEnabled(true);
-                button.setBackgroundResource(R.color.mapboxBlue);
-
-
-
-                mapboxMap.addOnMapClickListener(TurnNavigation2.this);
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean simulateRoute = true;
-                        NavigationLauncherOptions options = NavigationLauncherOptions.builder()
-                                .directionsRoute(currentRoute)
-                                .shouldSimulateRoute(simulateRoute)
-                                .build();
-// Call this method with Context from within an Activity
-                        NavigationLauncher.startNavigation(TurnNavigation2.this, options);
-                    }
-                });
-            }
-        });
     }
-
-
 
 
     private Location getLastKnownLocation() {
@@ -154,7 +108,7 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
             // for ActivityCompat#requestPermissions for more details.
             return null;
         }
-        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
         List<String> providers = mLocationManager.getProviders(true);
         Location bestLocation = null;
         for (String provider : providers) {
@@ -206,6 +160,93 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
 //        button.setBackgroundResource(R.color.mapboxBlue);
         return true;
     }
+
+    private void destination_name(String name) {
+        MapboxGeocoding mapboxGeocoding = MapboxGeocoding.builder()
+                .accessToken(Mapbox.getAccessToken())
+                .query(name)
+                .build();
+
+        mapboxGeocoding.enqueueCall(new Callback<GeocodingResponse>() {
+            @Override
+            public void onResponse(Call<GeocodingResponse> call, Response<GeocodingResponse> response) {
+
+                List<CarmenFeature> results = response.body().features();
+
+                if (results.size() > 0) {
+
+                    // Log the first results Point.
+                    Point firstResultPoint = results.get(0).center();
+                    Log.e(TAG, "onResponse: " + firstResultPoint.latitude());
+                    Log.e(TAG, "onResponse: " + firstResultPoint.longitude());
+
+                    dest=firstResultPoint;
+
+                    mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
+                        @Override
+                        public void onStyleLoaded(@NonNull Style style) {
+                            enableLocationComponent(style);
+
+                            addDestinationIconSymbolLayer(style);
+
+
+                            Location myLocation = getLastKnownLocation();
+//                Toast.makeText(TurnNavigation2.this, ""+myLocation.getLatitude(), Toast.LENGTH_LONG).show();
+
+
+//                Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+                            Point originPoint = Point.fromLngLat(myLocation.getLongitude(),
+                                    myLocation.getLatitude());
+
+//                Point dest = Point.fromLngLat(app.getDestination().longitude, app.getDestination().latitude);
+//                Point dest = Point.fromLngLat(                -0.14831526404881734,37.3150634765625
+//                );
+
+
+
+                            GeoJsonSource source = mapboxMap.getStyle().getSourceAs("destination-source-id");
+                            if (source != null) {
+                                source.setGeoJson(Feature.fromGeometry(dest));
+                            }
+
+
+                            getRoute(originPoint, dest);
+                            button.setEnabled(true);
+//                button.setBackgroundResource(R.color.mapboxBlue);
+
+
+                            mapboxMap.addOnMapClickListener(TurnNavigation2.this);
+                            button.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    boolean simulateRoute = true;
+                                    NavigationLauncherOptions options = NavigationLauncherOptions.builder()
+                                            .directionsRoute(currentRoute)
+                                            .shouldSimulateRoute(simulateRoute)
+                                            .build();
+// Call this method with Context from within an Activity
+                                    NavigationLauncher.startNavigation(TurnNavigation2.this, options);
+                                }
+                            });
+                        }
+                    });
+
+
+                } else {
+
+                    // No result for your request were found.
+                    Log.d(TAG, "onResponse: No result found");
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<GeocodingResponse> call, Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
+    }
+
 
     private void getRoute(Point origin, Point destination) {
         NavigationRoute.builder(this)
@@ -261,10 +302,6 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
 
     @Override
     public void onExplanationNeeded(List<String> permissionsToExplain) {
