@@ -9,11 +9,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -38,8 +42,13 @@ public class SignatureActivity extends AppCompatActivity {
     DriverApplication app;
     TextView txt_from;
     EditText receiver_phone;
+    CheckBox receiver, no_receiver;
+    private RadioGroup radioSexGroup;
+    private RadioButton radioSexButton;
+    private boolean receiver_available = true;
 
     AlertDialog mpesaalertDialog, paybillalertDialog;
+    CardView card_details;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,9 +63,34 @@ public class SignatureActivity extends AppCompatActivity {
         txt_from = findViewById(R.id.txt_from);
         receiver_phone = findViewById(R.id.receiver_phone);
 
+        card_details = findViewById(R.id.card_details);
+        card_details.setVisibility(View.GONE);
+        mSaveButton.setVisibility(View.GONE);
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
         String user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
+
+        radioSexGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        radioSexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // find which radio button is selected
+                if (checkedId == R.id.radioButton) {
+                    card_details.setVisibility(View.VISIBLE);
+                    mSaveButton.setVisibility(View.VISIBLE);
+                    receiver_available = true;
+
+                } else {
+                    card_details.setVisibility(View.GONE);
+                    mSaveButton.setVisibility(View.VISIBLE);
+                    receiver_available = false;
+
+                }
+            }
+
+        });
+
 
         if (user == null) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -109,20 +143,32 @@ public class SignatureActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                String strUserName = receiver_phone.getText().toString();
-                if (strUserName.trim().equals("")) {
-                    Toast.makeText(SignatureActivity.this, "Phone number required ", Toast.LENGTH_SHORT).show();
-                    return;
-                } else {
 
-                    if (strUserName.startsWith("0")) {
-                        strUserName = strUserName.replaceFirst("0", "+254");
+                if (receiver_available) {
 
-                        generateCode(strUserName);
+
+                    String strUserName = receiver_phone.getText().toString();
+                    if (strUserName.trim().equals("")) {
+                        Toast.makeText(SignatureActivity.this, "Phone number required ", Toast.LENGTH_SHORT).show();
+                        return;
                     } else {
-                        generateCode(strUserName);
+
+                        if (strUserName.startsWith("0")) {
+                            strUserName = strUserName.replaceFirst("0", "+254");
+
+                            generateCode(strUserName);
+                        } else {
+                            generateCode(strUserName);
+
+                        }
 
                     }
+
+                } else {
+
+
+                    update_package_Complete(app.getPackage_id(), app.getUserid(), app.getPhone_no());
+
 
                 }
 

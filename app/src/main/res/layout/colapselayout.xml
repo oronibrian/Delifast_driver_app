@@ -19,7 +19,8 @@
         app:inner_view="@layout/layout_bottom_bar"
         app:startExpanded="false"
         android:textAlignment="center"
-        app:title="Package Delivery Details" />
+        android:gravity="center"
+        app:title="          Package Delivery Details" />
 
 
 </LinearLayout>

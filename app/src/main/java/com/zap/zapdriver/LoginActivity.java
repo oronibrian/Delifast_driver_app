@@ -166,6 +166,7 @@ public class LoginActivity extends AppCompatActivity {
                 String username = data.getString("username");
                 String last_name = data.getString("last_name");
                 String email = data.getString("username");
+                String phone_no = data.getString("phone_no");
 
 
                 app.setFirstName(name);
@@ -174,6 +175,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 app.setUsername(username);
                 app.setUserid(id);
+                app.setPhone_no(phone_no);
 
                 app.setPassword(editextpassword.getText().toString());
 
@@ -185,6 +187,7 @@ public class LoginActivity extends AppCompatActivity {
                 editor.putString("name", name);
                 editor.putString("last_name", last_name);
                 editor.putString("email", email);
+                editor.putString("phone_no", phone_no);
 
                 editor.putString("password", editextpassword.getText().toString());
                 editor.putString("id", id);

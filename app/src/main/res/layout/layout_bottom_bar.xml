@@ -255,8 +255,8 @@
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:tint="@color/colorPrimary"
-                            app:srcCompat="@drawable/phone" />
+                            app:srcCompat="@drawable/phone"
+                            app:tint="@color/colorPrimary" />
 
 
                         <ImageView

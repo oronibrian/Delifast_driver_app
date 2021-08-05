@@ -103,10 +103,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -232,9 +230,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         ll_navigation = findViewById(R.id.ll_navigation);
 
-
-//get the values of the settings options
-
+        //get the values of the settings options
 
         tvmenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -263,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         String last_name = sharedPreferences.getString("last_name", "");
         String email = sharedPreferences.getString("email", "");
+        String phone_no = sharedPreferences.getString("phone_no", "");
 
 
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -287,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             app.setUsername(email);
             app.setUserid(id);
             app.setPassword(pass);
+            app.setPhone_no(phone_no);
 
             Request_token(user, pass);
 
@@ -422,8 +420,14 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
+                if (app.getIs_cooperate()) {
+                    startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
 
-                checkPaid();
+                    Toast.makeText(getApplicationContext(), "Cooperate package", Toast.LENGTH_SHORT).show();
+                } else {
+                    checkPaid();
+
+                }
 
 
             }
@@ -433,13 +437,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         //Websocket listening for request
 
 
-        createWebSocketClient(app.getUserid(),"18.159.15.240");
-
+        createWebSocketClient(app.getUserid(), "18.159.15.240");
 
 
     }
-
-
 
 
     private void checkPaid() {
@@ -562,6 +563,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         if (!data.getString("access").isEmpty()) {
 
                             String token = data.getString("access");
+                            String phone_no = data.getString("phone_no");
 
                             SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
                                     Context.MODE_PRIVATE);
@@ -571,6 +573,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             editor.apply();
 
                             app.setAuttoken(token);
+                            app.setPhone_no(phone_no);
 
                             checkAssigned();
                             Post_Device_fcm(token);
@@ -587,6 +590,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 error -> {
                     // error
                     Log.d("Error.Response", error.toString());
+
+                    startActivity(new Intent(this,LoginActivity.class));
+                    finish();
 
 
                 }
@@ -1218,6 +1224,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     app.setPackage_from(pickup_name);
                                     app.setPackage_to(dropoff_name);
 
+                                    app.setIs_cooperate(obj.getBoolean("is_cooperate"));
+
                                     to = pickup_name;
                                     from = receiver_phone;
                                     app.setPackage_id(id);
@@ -1503,7 +1511,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 Log.e("toPickupname", toPickupname);
 
 
-
                             }
 
 
@@ -1724,7 +1731,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     }
 
-    private void createWebSocketClient(String username,String address) {
+    private void createWebSocketClient(String username, String address) {
         URI uri;
 
 
@@ -1760,6 +1767,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                         Toast.makeText(MainActivity.this, "Request received", Toast.LENGTH_SHORT).show();
                         addNotification();
+                        checkAssigned();
 
 
                     }

@@ -148,7 +148,7 @@ public class PrintQRActivity extends AppCompatActivity {
                                     EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32);
                                     printer
                                             .printFormattedText(
-                                                    "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, PrintQRActivity.this.getResources().getDrawableForDensity(R.drawable.zap_cnvte, DisplayMetrics.DENSITY_140)) + "</img>\n" +
+                                                    "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, PrintQRActivity.this.getResources().getDrawableForDensity(R.drawable.zap_cnvet, DisplayMetrics.DENSITY_140)) + "</img>\n" +
                                                             "[L]\n" +
                                                             "[C]<u><font size='big'>Zap Logistics</font></u>\n" +
                                                             "[L]\n" +

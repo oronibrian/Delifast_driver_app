@@ -17,8 +17,9 @@ public class DriverApplication extends Application {
     String auttoken;
     String package_from,package_to;
     LatLng destination;
+    Boolean is_cooperate;
 
-    String firstName,last_name,email;
+    String firstName,last_name,email,phone_no;
 
 
     @Override
@@ -132,6 +133,22 @@ public class DriverApplication extends Application {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getIs_cooperate() {
+        return is_cooperate;
+    }
+
+    public void setIs_cooperate(Boolean is_cooperate) {
+        this.is_cooperate = is_cooperate;
+    }
+
+    public String getPhone_no() {
+        return phone_no;
+    }
+
+    public void setPhone_no(String phone_no) {
+        this.phone_no = phone_no;
     }
 }
 

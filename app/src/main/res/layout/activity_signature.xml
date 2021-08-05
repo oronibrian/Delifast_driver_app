@@ -134,6 +134,62 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/_10sdp"
+                    android:paddingTop="@dimen/spacing_middle"
+                    android:paddingBottom="@dimen/spacing_middle">
+
+                    <RadioGroup
+                        android:id="@+id/radioGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="1">
+
+                        <RadioButton
+                            android:id="@+id/radioButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:checked="false"
+                            android:layout_weight="0.5"
+                            android:text="Receiver"
+                            android:textSize="18sp" />
+
+                        <RadioButton
+                            android:id="@+id/radioButton2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_weight="0.13"
+                            android:checked="false"
+                            android:text="No Receiver"
+                            android:textSize="18sp" />
+                    </RadioGroup>
+
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="@dimen/spacing_middle" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/card_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="2dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingTop="@dimen/spacing_middle"
                     android:paddingBottom="@dimen/spacing_middle">
@@ -153,28 +209,15 @@
                     <EditText
                         android:id="@+id/receiver_phone"
                         android:layout_width="match_parent"
-                        android:hint="phone number"
-                        android:inputType="phone"
-                        android:layout_marginLeft="@dimen/spacing_mlarge"
-                        android:layout_marginTop="@dimen/spacing_middle"
-                        android:layout_marginRight="@dimen/spacing_mlarge"
-                        android:layout_marginBottom="@dimen/spacing_middle"
-                        android:gravity="center_vertical"
-                        android:layout_height="wrap_content" />
-
-
-                    <Button
-                        android:id="@+id/save_button"
-                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/spacing_mlarge"
                         android:layout_marginTop="@dimen/spacing_middle"
                         android:layout_marginRight="@dimen/spacing_mlarge"
                         android:layout_marginBottom="@dimen/spacing_middle"
-                        android:background="@drawable/round_bg"
-                        android:padding="12dp"
-                        android:text="Submit"
-                        android:textColor="@color/colorOrangeLine" />
+                        android:gravity="center_vertical"
+                        android:hint="phone number"
+                        android:inputType="phone" />
+
 
                 </LinearLayout>
 
@@ -195,6 +238,19 @@
             <View
                 android:layout_width="0dp"
                 android:layout_height="@dimen/spacing_large" />
+
+            <Button
+                android:id="@+id/save_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/spacing_mlarge"
+                android:layout_marginTop="@dimen/spacing_middle"
+                android:layout_marginRight="@dimen/spacing_mlarge"
+                android:layout_marginBottom="@dimen/spacing_middle"
+                android:background="@drawable/round_bg"
+                android:padding="12dp"
+                android:text="Submit"
+                android:textColor="@color/colorOrangeLine" />
 
         </LinearLayout>
 

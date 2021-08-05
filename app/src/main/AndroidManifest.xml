@@ -18,7 +18,7 @@
     <application
         android:name=".DriverApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -26,10 +26,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity
-            android:name=".TurnByNavigation"
-            android:exported="true" />
-        <activity android:name=".TurnNavigation2" /> <!-- <activity android:name=".TurnByNavigation" /> -->
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_location_tracking" />
@@ -51,6 +48,7 @@
         <activity android:name=".ScanReturnActivity" />
         <activity android:name=".My_Deliveries" />
         <activity android:name=".SignatureActivity" />
+        <activity android:name="TurnNavigation2"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

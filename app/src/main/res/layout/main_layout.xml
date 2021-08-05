@@ -70,8 +70,7 @@
 
         <include
             android:id="@+id/bottom"
-            layout="@layout/colapselayout"
-            />
+            layout="@layout/colapselayout" />
 
     </RelativeLayout>
 
