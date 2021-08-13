@@ -89,6 +89,7 @@ public class PrintQRActivity extends AppCompatActivity {
     InputStream inputStream;
 
     String value = "";
+    String data = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +106,12 @@ public class PrintQRActivity extends AppCompatActivity {
 
 
         findBT();
+        Intent intent = getIntent();
+
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            data = extras.getString("data");
+        }
 
 
         acceptBtnContinue.setOnClickListener(new View.OnClickListener() {
@@ -150,12 +157,18 @@ public class PrintQRActivity extends AppCompatActivity {
                                             .printFormattedText(
                                                     "[C]<img>" + PrinterTextParserImg.bitmapToHexadecimalString(printer, PrintQRActivity.this.getResources().getDrawableForDensity(R.drawable.zap_cnvet, DisplayMetrics.DENSITY_140)) + "</img>\n" +
                                                             "[L]\n" +
-                                                            "[C]<u><font size='big'>Zap Logistics</font></u>\n" +
+                                                            "[C]<u><font size='small'>Zap Logistics</font></u>\n" +
                                                             "[L]\n" +
                                                             "[C]\n" + mydate +
                                                             "[L]\n" +
                                                             "[C]================================\n" +
                                                             "[L]\n" +
+                                                            "[L]\n" + data +
+                                                            "[L]\n" +
+
+                                                            "[C]================================\n" +
+                                                            "[L]\n" +
+
 
                                                             "[L]From: \n" + app.getPackage_from() +
                                                             "[L]\n" +
@@ -180,6 +193,16 @@ public class PrintQRActivity extends AppCompatActivity {
 
 
 //                                break;
+                            } else if (device.getName().equals("RPP320-500e-E")) {
+
+                                EscPosPrinter printer = new EscPosPrinter(BluetoothPrintersConnections.selectFirstPaired(), 203, 48f, 32);
+                                printer
+                                        .printFormattedText(
+
+                                                "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
+                                                        "[C]<qrcode size='20'>http://www.developpeur-web.dantsu.com/</qrcode>"
+                                        );
+
                             }
                         }
 
@@ -425,7 +448,7 @@ public class PrintQRActivity extends AppCompatActivity {
             ContextWrapper cw = new ContextWrapper(getApplicationContext());
             File path1 = cw.getDir("picture", Context.MODE_PRIVATE);
             File f = new File(path1, "barcode.jpg");
-             b3 = BitmapFactory.decodeStream(new FileInputStream(f));
+            b3 = BitmapFactory.decodeStream(new FileInputStream(f));
             ImageView img = (ImageView) findViewById(R.id.viewImage);
             img.setImageBitmap(b3);
         } catch (FileNotFoundException e) {
@@ -525,7 +548,6 @@ public class PrintQRActivity extends AppCompatActivity {
         intent.setDataAndType(data, "application/pdf");
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
-        
 
 
     }
@@ -560,6 +582,13 @@ public class PrintQRActivity extends AppCompatActivity {
                         acceptBtnContinue.setEnabled(true);
 
                         break;
+                    } else if (device.getName().equals("Sticker")) {
+                        Log.e("device:", mmDevice.getName().toString());
+//                        InitPrinter();
+                        mmDevice = device;
+
+                        acceptBtn.setEnabled(true);
+                        acceptBtnContinue.setEnabled(true);
                     }
                 }
             } else {

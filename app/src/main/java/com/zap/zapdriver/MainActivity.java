@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     SpinKitView spin_kit;
     LinearLayout ll_navigation;
 
+    Boolean reprint=false;
 
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
@@ -333,10 +334,16 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     try {
 //                        boolean save = new QRGSaver().save(savePath, "qr", bitmap, QRGContents.ImageType.IMAGE_JPEG);
 //                        String result = save ? "Image Saved" : "Image Not Saved";
-                        saveToInternalSorage(bitmap);
+                        saveToInternalSorage(bitmap, txtcustomer_name.getText().toString());
                         saveToInternalSorageBarcode(bitmap2);
 //                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
-                        PickPackage(app.getPackage_id(), app.getUserid());
+
+                        if (reprint) {
+                            PickPackage(app.getPackage_id(), app.getUserid());
+                        } else {
+                            Toast.makeText(MainActivity.this, "Re-printing", Toast.LENGTH_SHORT).show();
+
+                        }
 
 
                     } catch (Exception e) {
@@ -591,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     // error
                     Log.d("Error.Response", error.toString());
 
-                    startActivity(new Intent(this,LoginActivity.class));
+                    startActivity(new Intent(this, LoginActivity.class));
                     finish();
 
 
@@ -731,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     }
 
 
-    private String saveToInternalSorage(Bitmap bitmapImage) {
+    private String saveToInternalSorage(Bitmap bitmapImage, String data) {
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("picture", Context.MODE_PRIVATE);
         // Create imageDir
@@ -747,7 +754,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             fos.close();
 
-            startActivity(new Intent(MainActivity.this, PrintQRActivity.class));
+            Intent i = new Intent(MainActivity.this, PrintQRActivity.class);
+            i.putExtra("data", data);
+            startActivity(i);
 
 
         } catch (Exception e) {
@@ -1219,6 +1228,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     String distance = obj.getString("distance");
                                     String cost = obj.getString("cost");
                                     String receiver_phone = obj.getString("receiver_phone");
+                                    String drivername = obj.getString("drivername");
+                                    String sendername = obj.getString("sendername");
 
                                     accepted = obj.getString("status");
                                     app.setPackage_from(pickup_name);
@@ -1233,7 +1244,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText(title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
+                                    txtcustomer_name.setText("Receiver: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
 
                                     pacakge = title;
 
@@ -1258,7 +1269,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                         notificationManager.notify(1, builder.build());
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
 
-
+                                        reprint=true;
                                         getPosition();
 
 
