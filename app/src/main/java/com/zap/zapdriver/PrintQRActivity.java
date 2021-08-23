@@ -183,7 +183,7 @@ public class PrintQRActivity extends AppCompatActivity {
 //                                                            "[C]<barcode type='ean13' height='10'>000000000000" + app.getPackage_id() + "</barcode>\n" +
 //                                                            "[L]\n" +
 
-                                                            "[C]<qrcode size='20'>https://zaplogistics.co.ke/</qrcode>"
+                                                            "[C]<qrcode size='20'>https://zaplogistics.co.ke/"+app.getPackage_id()+"</qrcode>"
                                             );
 
 

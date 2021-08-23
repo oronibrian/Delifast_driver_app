@@ -43,7 +43,7 @@
                     android:layout_margin="16dp"
                     android:textSize="14sp"
                     app:colorBorder="@color/purple_50"
-                    app:colorOn="@color/colorOrangeLine"
+                    app:colorOn="@color/green_300"
                     app:textOn="ONLINE"
                     app:textOff="OFFLINE"
                     app:on="true" />

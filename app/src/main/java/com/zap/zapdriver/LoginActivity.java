@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.zap.zapdriver.API.Urls;
@@ -32,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
     Button btnlogn;
 
     ProgressDialog progressDoalog;
-    EditText edittextusername,editextpassword;
+    EditText edittextusername, editextpassword;
 
     String ACCESS_TOKEN;
 
@@ -43,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        app=(DriverApplication) getApplicationContext();
+        app = (DriverApplication) getApplicationContext();
 
         setContentView(R.layout.activity_login);
 
@@ -56,11 +58,11 @@ public class LoginActivity extends AppCompatActivity {
         progressDoalog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
 
-        btnlogn =findViewById(R.id.save_button);
+        btnlogn = findViewById(R.id.save_button);
 
-        editextpassword=findViewById(R.id.editextpassword);
+        editextpassword = findViewById(R.id.editextpassword);
 
-        edittextusername=findViewById(R.id.edittextusername);
+        edittextusername = findViewById(R.id.edittextusername);
 
         btnlogn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,10 +74,6 @@ public class LoginActivity extends AppCompatActivity {
 
         });
     }
-
-
-
-
 
 
     private void Request_token() {
@@ -115,14 +113,12 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d("Error.Response", error.toString());
 
 
-
                         progressDoalog.dismiss();
 
                     }
             ) {
                 @Override
-                protected Map<String, String> getParams()
-                {
+                protected Map<String, String> getParams() {
                     Map<String, String> params = new HashMap<String, String>();
                     params.put("email", email);
                     params.put("password", password);
@@ -194,6 +190,8 @@ public class LoginActivity extends AppCompatActivity {
                 editor.apply();
 
 
+                onLine(id);
+
                 Log.e("name", name);
             }
 
@@ -208,6 +206,31 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+    public void onLine(String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.onlineRequest + "/" + rider_id;
+        Log.d("Accepted", url);
+
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Accepted", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
 
 
 }

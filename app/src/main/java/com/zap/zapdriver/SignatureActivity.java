@@ -70,6 +70,30 @@ public class SignatureActivity extends AppCompatActivity {
         String user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
 
+
+        String pass = sharedPreferences.getString("password", "");
+
+        String name = sharedPreferences.getString("name", "");
+
+        String last_name = sharedPreferences.getString("last_name", "");
+        String email = sharedPreferences.getString("email", "");
+        String phone_no = sharedPreferences.getString("phone_no", "");
+
+
+        if (user.equals("")) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+
+        } else {
+            app.setUsername(email);
+            app.setUserid(id);
+            app.setPassword(pass);
+            app.setPhone_no(phone_no);
+
+            Request_token(user, pass);
+        }
+
+
         radioSexGroup = (RadioGroup) findViewById(R.id.radioGroup);
         radioSexGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 
@@ -175,6 +199,77 @@ public class SignatureActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+
+    private void Request_token(String email, String password) {
+
+
+        StringRequest postRequest = new StringRequest(Request.Method.POST, Urls.Auth,
+                response -> {
+                    // response
+                    Log.e("Auth", response);
+                    try {
+                        JSONObject data = new JSONObject(response);
+
+
+                        if (!data.getString("access").isEmpty()) {
+
+                            String token = data.getString("access");
+                            String phone_no = data.getString("phone_no");
+
+                            SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
+                                    Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("token", token);
+
+                            editor.apply();
+
+                            app.setAuttoken(token);
+                            app.setPhone_no(phone_no);
+
+
+
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+
+                    }
+
+
+                },
+                error -> {
+                    // error
+                    Log.d("Error.Response", error.toString());
+
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+
+
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("email", email);
+                params.put("password", password);
+
+                return params;
+            }
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        requestQueue.add(postRequest);
+
     }
 
     private void ComfirmCode() {

@@ -15,6 +15,9 @@ public class Urls {
     public static final String rejectrequest = Base2 + "rejectrequest";
     public static final String pickrequest = Base2 + "pickpackage";
 
+    public static final String onlineRequest = Base2 + "driveronlinelinerequest";
+    public static final String offlineRequest = Base2 + "driverofflinerequest";
+
 
     public static final String generate_receiver_code = Base + "v1/generate_receiver_code";
 

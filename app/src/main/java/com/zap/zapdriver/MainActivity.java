@@ -413,6 +413,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 if (!isOn) {
                     // The toggle is enabled
                     showDialog();
+                    offLine(app.getUserid());
 
 
                 }
@@ -941,8 +942,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     .setPositiveButton(android.R.string.ok, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+
+                            offLine(app.getUserid());
+
                             startActivity(new Intent(MainActivity.this, LoginActivity.class));
                             finish();
+
                         }
                     })
                     .setNegativeButton(android.R.string.no, null)
@@ -1228,7 +1233,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     String distance = obj.getString("distance");
                                     String cost = obj.getString("cost");
                                     String receiver_phone = obj.getString("receiver_phone");
-                                    String drivername = obj.getString("drivername");
+                                    String receiver_name = obj.getString("receiver_name");
                                     String sendername = obj.getString("sendername");
 
                                     accepted = obj.getString("status");
@@ -1244,7 +1249,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText("Receiver: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
+                                    txtcustomer_name.setText("Receiver: "+receiver_name+"\nphone: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
 
                                     pacakge = title;
 
@@ -1465,6 +1470,61 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     }
 
 
+
+    public void onLine(String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.onlineRequest  + "/" + rider_id;
+        Log.d("Accepted", url);
+
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Accepted", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
+    public void offLine(String rider_id) {
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+        String url = Urls.offlineRequest  + "/" + rider_id;
+        Log.d("Accepted", url);
+
+        StringRequest postRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // response
+                        Log.d("Accepted", response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.d("Error.Response", error.toString());
+                    }
+                }
+        );
+
+        queue.add(postRequest);
+    }
+
+
     public void acceptPackage(String package_id, String rider_id) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
@@ -1681,6 +1741,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                         labeledSwitch.isOn();
                         labeledSwitch.setOn(true);
+                        onLine(app.getUserid());
+
                     }
                 })
                 .show();
