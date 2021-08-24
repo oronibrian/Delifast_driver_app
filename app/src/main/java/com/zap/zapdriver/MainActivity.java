@@ -187,6 +187,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     Boolean asigned = false;
 
+    int amout_cost=0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -545,7 +547,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
-                String value = "+254" + stk_number.getText().toString().substring(1);
+                String value = "254" + stk_number.getText().toString().substring(1);
 
                 stkPushMethod(value);
 
@@ -639,17 +641,22 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         params.put("payment_phone", payment_phone);
 
 
-        String url = Urls.onlinepayment + "" + app.getPackage_id() + "/";
+        String url = Urls.onlinepayment + "" + amout_cost + "/"+ payment_phone +"/"+ app.getPackage_id() ;
         Log.e("payment_phone--url", url);
         Log.e("--param", payment_phone);
 
-        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, url, new JSONObject(params),
+        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.GET, url, null,
 
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         // response
-                        Log.e("payment_phone", response.toString());
+                        Log.e("mpesa", response.toString());
+
+                        Toast.makeText(MainActivity.this, "Received for processing", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+
+
                         paybillalertDialog.dismiss();
 
                     }
@@ -1245,6 +1252,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     to = pickup_name;
                                     from = receiver_phone;
                                     app.setPackage_id(id);
+
+                                    amout_cost= Integer.parseInt(cost);
 
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");

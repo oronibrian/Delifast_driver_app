@@ -36,7 +36,7 @@ public class Urls {
 
     public static final String checkPaid = Base2 + "ispackagepaid/";
 
-    public static final String onlinepayment = Base2 + "api/v1/onlinepayment/";
+    public static final String onlinepayment = Base2 + "mpesa/";
 
     
 }
