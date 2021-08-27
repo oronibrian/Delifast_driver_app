@@ -399,7 +399,7 @@
                             android:fontFamily="@font/googlesansbold"
                             android:gravity="center"
                             android:padding="@dimen/spacing_small"
-                            android:text="Print"
+                            android:text="Pick &amp; Print"
                             android:textColor="@color/textchild"
                             android:textSize="@dimen/font_small" />
 

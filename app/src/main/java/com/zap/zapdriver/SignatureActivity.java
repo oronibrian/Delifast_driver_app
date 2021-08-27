@@ -229,7 +229,6 @@ public class SignatureActivity extends AppCompatActivity {
                             app.setPhone_no(phone_no);
 
 
-
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -454,10 +453,24 @@ public class SignatureActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         // response
-                        Log.e("Response", response);
-                        Toast.makeText(SignatureActivity.this, "Delivery confirmed", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                        finish();
+                        JSONObject jsonArray = null;
+                        try {
+                            jsonArray = new JSONObject(response);
+
+                            String paid = jsonArray.getString("msg");
+
+                            Log.e("Response", response);
+                            Toast.makeText(SignatureActivity.this, "" + paid, Toast.LENGTH_SHORT).show();
+
+                            if (paid.equals("Success")) {
+                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                finish();
+                            }
+
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
 
 
                     }

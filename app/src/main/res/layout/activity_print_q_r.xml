@@ -93,4 +93,17 @@
 
     </LinearLayout>
 
+
+    <Button
+        android:id="@+id/btngotomap"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_corner_green"
+        android:paddingLeft="@dimen/spacing_mlarge"
+        android:paddingRight="@dimen/spacing_mlarge"
+        android:text="Navigate"
+        android:textColor="@android:color/white"
+        android:visibility="visible" />
+
 </LinearLayout>

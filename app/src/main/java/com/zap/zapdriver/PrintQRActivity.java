@@ -63,7 +63,7 @@ import java.util.UUID;
 public class PrintQRActivity extends AppCompatActivity {
     DriverApplication app;
     TextView content;
-    Button acceptBtn, acceptBtnContinue;
+    Button acceptBtn, acceptBtnContinue,btngotomap;
     // will show the statuses like bluetooth open, close or data sent
     TextView myLabel;
 
@@ -104,6 +104,8 @@ public class PrintQRActivity extends AppCompatActivity {
         myLabel = (TextView) findViewById(R.id.label);
         acceptBtnContinue = findViewById(R.id.acceptBtnContinue);
 
+        btngotomap=findViewById(R.id.btngotomap);
+
 
         findBT();
         Intent intent = getIntent();
@@ -125,6 +127,19 @@ public class PrintQRActivity extends AppCompatActivity {
 
             }
         });
+
+
+        btngotomap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                createPdf();
+                showDialog(PrintQRActivity.this);
+
+
+            }
+        });
+
 
         acceptBtn.setOnClickListener(new View.OnClickListener() {
             @Override

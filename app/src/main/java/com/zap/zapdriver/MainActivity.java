@@ -41,6 +41,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -82,12 +84,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
-import com.pusher.pushnotifications.PushNotifications;
 import com.squareup.picasso.Picasso;
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
@@ -165,13 +164,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     SpinKitView spin_kit;
     LinearLayout ll_navigation;
 
-    Boolean reprint=false;
+    Boolean reprint = false;
 
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
     String accepted = "";
 
-    private DatabaseReference databaseReference;
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     AllianceLoader allianceLoader;
@@ -183,11 +181,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     ArrayList<LatLng> formerlocations;
 
     private String androidIdd;
-    DatabaseReference usersRef;
 
     Boolean asigned = false;
+    Boolean offline_payment = false;
 
-    int amout_cost=0;
+    int amout_cost = 0;
 
 
     @Override
@@ -276,8 +274,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         markerPoints = new ArrayList<>();
 
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Locations");
-
 
         if (user.equals("")) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -293,20 +289,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             Log.e("email: ", String.valueOf(email));
 
-
-//        PushNotifications.start(getApplicationContext(), BuildConfig.INSTANCE_ID);
-
-//        PushNotifications.start(getApplicationContext(), "d8b10467-89ac-46cf-a38c-f1917d082d1d");
-            PushNotifications.start(getApplicationContext(), "d8b10467-89ac-46cf-a38c-f1917d082d1d");
-
-//        PushNotifications.addDeviceInterest("hello");
-            PushNotifications.stop();
-//        PushNotifications.removeDeviceInterest("example");
-            PushNotifications.clearDeviceInterests();
-            PushNotifications.addDeviceInterest(app.getUsername());
-
-
-            Log.e("interes", PushNotifications.getDeviceInterests().toString());
 
 
         }
@@ -343,6 +325,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         if (reprint) {
                             PickPackage(app.getPackage_id(), app.getUserid());
                         } else {
+                            PickPackage(app.getPackage_id(), app.getUserid());
+
                             Toast.makeText(MainActivity.this, "Re-printing", Toast.LENGTH_SHORT).show();
 
                         }
@@ -538,7 +522,51 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         View dialogView = inflater.inflate(R.layout.stk_push_layout, null);
         dialogBuilder.setView(dialogView);
 
+        CheckBox online = dialogView. findViewById(R.id.checkBox);
+        CheckBox offline = dialogView. findViewById(R.id.checkBox2);
+
         EditText stk_number = dialogView.findViewById(R.id.stk_mpesanumber);
+        LinearLayout ll_offlibe = dialogView.findViewById(R.id.ll_offlibe);
+        LinearLayout ll_online = dialogView.findViewById(R.id.ll_online);
+
+        TextView txt_offline = dialogView.findViewById(R.id.txt_offline);
+
+        txt_offline.setText("Select Lipa na mpesa\nPaybill no 869032\nAmount: "+amout_cost);
+
+
+        online.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (buttonView.isChecked()) {
+                    ll_offlibe.setVisibility(View.GONE);
+                    ll_online.setVisibility(View.VISIBLE);
+                    offline.setChecked(false);
+                    offline.setSelected(false);
+                    offline_payment=false;
+                }
+
+            }
+
+        });
+
+
+        offline.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (buttonView.isChecked()) {
+                    ll_online.setVisibility(View.GONE);
+                    ll_offlibe.setVisibility(View.VISIBLE);
+
+                    online.setChecked(false);
+                    online.setSelected(false);
+                    offline_payment=true;
+                }
+
+            }
+
+        });
+
+
 
 
         Button btncomplete = dialogView.findViewById(R.id.buttontn);
@@ -547,9 +575,16 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
-                String value = "254" + stk_number.getText().toString().substring(1);
 
-                stkPushMethod(value);
+                if(offline_payment){
+                    startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                    finish();
+
+                }else {
+                    String value = "254" + stk_number.getText().toString().substring(1);
+
+                    stkPushMethod(value);
+                }
 
             }
         });
@@ -641,7 +676,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         params.put("payment_phone", payment_phone);
 
 
-        String url = Urls.onlinepayment + "" + amout_cost + "/"+ payment_phone +"/"+ app.getPackage_id() ;
+        String url = Urls.onlinepayment + "" + amout_cost + "/" + payment_phone + "/" + app.getPackage_id();
         Log.e("payment_phone--url", url);
         Log.e("--param", payment_phone);
 
@@ -653,8 +688,26 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         // response
                         Log.e("mpesa", response.toString());
 
-                        Toast.makeText(MainActivity.this, "Received for processing", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+
+                        try {
+                            JSONObject data = response;
+
+
+                            if (data.getString("ResultDesc").contains("successfully")) {
+
+                                Toast.makeText(MainActivity.this, "Received for processing", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+
+
+                            }else{
+                                Toast.makeText(getApplicationContext(),""+data.getString("ResultDesc"),Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+
+                        }
+
+
 
 
                         paybillalertDialog.dismiss();
@@ -801,8 +854,25 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     protected void onResume() {
         super.onResume();
 
-        Log.e("IsASSIGNED", asigned.toString());
 
+        SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
+        String user = sharedPreferences.getString("username", "");
+        String id = sharedPreferences.getString("id", "");
+        String pass = sharedPreferences.getString("password", "");
+
+        String name = sharedPreferences.getString("name", "");
+
+        String last_name = sharedPreferences.getString("last_name", "");
+        String email = sharedPreferences.getString("email", "");
+        String phone_no = sharedPreferences.getString("phone_no", "");
+
+        Log.e("IsASSIGNED", asigned.toString());
+        app.setUsername(email);
+        app.setUserid(id);
+        app.setPassword(pass);
+        app.setPhone_no(phone_no);
+
+        Request_token(user, pass);
 
         getCurrentLocation();
         if (locationUtilObj != null /*&& !locationUtilObj.isGoogleAPIConnected()*/) {
@@ -812,9 +882,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         if (asigned = false) {
 
-            SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
-            String user = sharedPreferences.getString("token", "");
-            app.setAuttoken(user);
 
             handler.postDelayed(runnable = new Runnable() {
                 public void run() {
@@ -1253,12 +1320,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     from = receiver_phone;
                                     app.setPackage_id(id);
 
-                                    amout_cost= Integer.parseInt(cost);
+                                    amout_cost = Integer.parseInt(cost);
 
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText("Receiver: "+receiver_name+"\nphone: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
+                                    txtcustomer_name.setText("Receiver: " + receiver_name + "\nphone: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
 
                                     pacakge = title;
 
@@ -1283,7 +1350,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                         notificationManager.notify(1, builder.build());
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
 
-                                        reprint=true;
+                                        reprint = true;
                                         getPosition();
 
 
@@ -1479,11 +1546,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     }
 
 
-
     public void onLine(String rider_id) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-        String url = Urls.onlineRequest  + "/" + rider_id;
+        String url = Urls.onlineRequest + "/" + rider_id;
         Log.d("Accepted", url);
 
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,
@@ -1510,7 +1576,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     public void offLine(String rider_id) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-        String url = Urls.offlineRequest  + "/" + rider_id;
+        String url = Urls.offlineRequest + "/" + rider_id;
         Log.d("Accepted", url);
 
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,

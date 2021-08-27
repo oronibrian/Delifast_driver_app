@@ -11,15 +11,13 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingTop="@dimen/spacing_large">
+        android:paddingTop="@dimen/_2sdp">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="320dp"
-            android:layout_height="0dp"
-            android:layout_margin="@dimen/spacing_large"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_2sdp"
             android:visibility="visible"
-
             app:cardCornerRadius="6dp"
             app:cardElevation="6dp">
 
@@ -40,16 +38,31 @@
                         android:layout_height="65dp"
                         android:src="@drawable/mpesa" />
 
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
-                        android:gravity="center_vertical"
-                        android:text="Input number to pay"
-                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
-                        android:textColor="@color/colorPrimary"
-                        android:textStyle="bold" />
+                        android:gravity="center_horizontal"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/spacing_large">
+
+                        <CheckBox
+                            android:id="@+id/checkBox"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Online method"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <CheckBox
+                            android:id="@+id/checkBox2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="14dp"
+                            android:text="Offline method"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+                    </LinearLayout>
+
 
                     <View
                         android:layout_width="match_parent"
@@ -57,11 +70,13 @@
                         android:layout_margin="@dimen/spacing_middle" />
 
                     <LinearLayout
+                        android:id="@+id/ll_online"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_mlarge"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
+                        android:visibility="gone"
                         android:padding="@dimen/spacing_middle">
 
                         <LinearLayout
@@ -82,12 +97,43 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:ems="10"
-                                android:hint="070012345"
                                 android:gravity="center_vertical"
+                                android:hint="070012345"
 
                                 android:inputType="phone"
                                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead"
                                 android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_offlibe"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_mlarge"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+
+                        android:padding="@dimen/spacing_middle">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/txt_offline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:textStyle="normal"
+                                android:textSize="@dimen/_15sdp"
+                                android:text="Select Lipa na mpesa\nPaybill\npaybill no 869032\"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1" />
 
                         </LinearLayout>
 
