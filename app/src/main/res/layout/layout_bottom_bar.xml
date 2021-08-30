@@ -54,9 +54,11 @@
                         android:id="@+id/txtcustomer_name"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_medium"
                         android:gravity="center"
+                        android:padding="@dimen/spacing_medium"
+                        android:fontFamily="@font/googlesanslight"
                         android:textSize="@dimen/_11sdp"
+                        android:layout_margin="@dimen/_5sdp"
                         android:textStyle="bold"
                         tools:text="GJ 2XX - F4F4" />
 
@@ -65,11 +67,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:maxLines="1"
                         android:gravity="center"
-
+                        android:padding="@dimen/spacing_medium"
+                        android:maxLines="1"
                         android:singleLine="true"
-                        android:textSize="@dimen/spacing_large"
+                        android:textSize="@dimen/_17sdp"
+                        android:fontFamily="@font/googlesanslight"
+                        android:layout_margin="@dimen/_5sdp"
                         android:textStyle="bold"
                         tools:text="ksh" />
                 </LinearLayout>
@@ -79,8 +83,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0.5"
-                    android:visibility="gone"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
 
                 </LinearLayout>
@@ -211,10 +215,10 @@
 
                         <ImageView
                             android:id="@+id/qr_image"
-                            android:visibility="gone"
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
+                            android:visibility="gone"
                             app:srcCompat="@drawable/ic_near_me" />
 
 
@@ -227,11 +231,13 @@
 
                     <Button
                         android:id="@+id/btnEndRide"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:text="Complete"
                         android:background="@drawable/round_bg"
+                        android:gravity="center"
+                        android:text="End Ride"
+                        android:layout_marginEnd="@dimen/_30sdp"
+                        android:layout_marginStart="@dimen/_30sdp"
                         android:textColor="@color/colorOrangeLine"
                         android:tint="@android:color/white"
 
@@ -251,20 +257,20 @@
 
                         <ImageButton
                             android:id="@+id/btncall"
-                            android:visibility="gone"
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
+                            android:visibility="gone"
                             app:srcCompat="@drawable/phone"
                             app:tint="@color/colorPrimary" />
 
 
                         <ImageView
                             android:id="@+id/barcode_image"
-                            android:visibility="gone"
                             android:layout_width="?attr/actionBarSize"
                             android:layout_height="?attr/actionBarSize"
                             android:background="?attr/selectableItemBackgroundBorderless"
+                            android:visibility="gone"
                             app:srcCompat="@drawable/ic_near_me" />
 
 
@@ -294,10 +300,10 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/_100sdp"
+                android:layout_gravity="center"
                 android:layout_marginStart="@dimen/spacing_medium"
                 android:layout_marginTop="@dimen/spacing_small"
                 android:layout_marginEnd="@dimen/spacing_medium"
-                android:layout_gravity="center"
                 android:layout_marginBottom="@dimen/spacing_medium"
                 android:background="@color/white"
                 app:cardCornerRadius="@dimen/spacing_small"
@@ -310,9 +316,9 @@
                     android:layout_marginTop="@dimen/spacing_small"
                     android:layout_marginEnd="@dimen/spacing_medium"
                     android:layout_marginBottom="@dimen/spacing_medium"
-                    android:gravity="center"
-
                     android:fontFamily="@font/googlesansregular"
+
+                    android:gravity="center"
                     android:orientation="vertical">
 
                     <RelativeLayout
@@ -325,7 +331,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_centerVertical="true"
-                            android:orientation="vertical"/>
+                            android:orientation="vertical" />
 
                         <RelativeLayout
                             android:layout_width="match_parent"
@@ -349,7 +355,6 @@
                             </LinearLayout>
 
 
-
                         </RelativeLayout>
 
 
@@ -371,7 +376,6 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:visibility="gone"
                             android:id="@+id/tvPrint"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -384,7 +388,8 @@
                             android:padding="@dimen/spacing_small"
                             android:text="Print"
                             android:textColor="@color/textchild"
-                            android:textSize="@dimen/font_small" />
+                            android:textSize="@dimen/font_small"
+                            android:visibility="gone" />
 
                         <TextView
                             android:id="@+id/tvscan"
@@ -460,11 +465,11 @@
             android:id="@+id/card_id_package_serach"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
             android:layout_gravity="center"
             android:gravity="center"
-            android:padding="@dimen/spacing_medium">
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium"
+            android:visibility="gone">
 
             <com.agrawalsuneet.dotsloader.loaders.AllianceLoader
                 android:layout_width="wrap_content"

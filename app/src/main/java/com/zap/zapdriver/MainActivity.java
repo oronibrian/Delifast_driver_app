@@ -1325,7 +1325,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + cost);
-                                    txtcustomer_name.setText("Receiver: " + receiver_name + "\nphone: " + receiver_phone + " \nDistance: " + distance + "km\nSender: " + sendername);
+                                    txtcustomer_name.setText("Receiver phone: " + receiver_phone + "\nDist: " + distance + "km\nSender: " + sendername);
 
                                     pacakge = title;
 
