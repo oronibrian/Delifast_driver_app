@@ -2,6 +2,8 @@ package com.zap.zapdriver;
 
 import android.app.Application;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.google.android.gms.maps.model.LatLng;
 
 public class DriverApplication extends Application {
@@ -25,6 +27,8 @@ public class DriverApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
     }
 
 

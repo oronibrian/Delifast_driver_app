@@ -58,6 +58,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.agrawalsuneet.dotsloader.loaders.AllianceLoader;
+import com.alespero.expandablecardview.ExpandableCardView;
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -133,12 +134,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     private WebSocketClient webSocketClient;
 
-    Button btnEndRide;
+    TextView btnEndRide;
     ArrayList<LatLng> markerPoints;
     String to, from = "";
     TextView source_location, destination_location, tvmenu, textView_details;
     TextView txtFare, txtcustomer_name, tvscan;
-    TextView btncall;
+    ImageView btncall;
     String pacakge;
     DriverApplication app;
     private GoogleMap mMap;
@@ -162,7 +163,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LatLng rider_location;
 
     SpinKitView spin_kit;
-    LinearLayout ll_navigation;
+    TextView ll_navigation;
+    ExpandableCardView profile;
 
     Boolean reprint = false;
 
@@ -227,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         tvmenu = findViewById(R.id.tvmenu);
         spin_kit = findViewById(R.id.spin_kit);
         ll_buttons = findViewById(R.id.ll_buttons);
+        profile = findViewById(R.id.profile);
 
 
         ll_navigation = findViewById(R.id.ll_navigation);
@@ -274,7 +277,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         markerPoints = new ArrayList<>();
 
 
-
         if (user.equals("")) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
@@ -290,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             Log.e("email: ", String.valueOf(email));
 
 
-
         }
 
 
@@ -298,7 +299,28 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(getApplicationContext(), TurnNavigation2.class));
+//                startActivity(new Intent(getApplicationContext(), TurnNavigation2.class));
+
+
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + source_location.getText().toString() + "o,+" + destination_location.getText().toString());
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+
+
+//                Uri.Builder builder = new Uri.Builder();
+//                builder.scheme("https")
+//                        .authority("www.google.com")
+//                        .appendPath("maps")
+//                        .appendPath("dir")
+//                        .appendPath("")
+//                        .appendQueryParameter("api", "1")
+//                        .appendQueryParameter("destination", app.getDestination().latitude + "," + app.getDestination().longitude);
+//                String url = builder.build().toString();
+//                Log.d("Directions", url);
+//                Intent i = new Intent(Intent.ACTION_VIEW);
+//                i.setData(Uri.parse(url));
+//                startActivity(i);
 
 
             }
@@ -522,8 +544,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         View dialogView = inflater.inflate(R.layout.stk_push_layout, null);
         dialogBuilder.setView(dialogView);
 
-        CheckBox online = dialogView. findViewById(R.id.checkBox);
-        CheckBox offline = dialogView. findViewById(R.id.checkBox2);
+        CheckBox online = dialogView.findViewById(R.id.checkBox);
+        CheckBox offline = dialogView.findViewById(R.id.checkBox2);
 
         EditText stk_number = dialogView.findViewById(R.id.stk_mpesanumber);
         LinearLayout ll_offlibe = dialogView.findViewById(R.id.ll_offlibe);
@@ -531,7 +553,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         TextView txt_offline = dialogView.findViewById(R.id.txt_offline);
 
-        txt_offline.setText("Select Lipa na mpesa\nPaybill no 869032\nAmount: "+amout_cost);
+        txt_offline.setText("Select Lipa na mpesa\nPaybill no 869032\nAmount: " + amout_cost);
 
 
         online.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -542,7 +564,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     ll_online.setVisibility(View.VISIBLE);
                     offline.setChecked(false);
                     offline.setSelected(false);
-                    offline_payment=false;
+                    offline_payment = false;
                 }
 
             }
@@ -559,14 +581,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                     online.setChecked(false);
                     online.setSelected(false);
-                    offline_payment=true;
+                    offline_payment = true;
                 }
 
             }
 
         });
-
-
 
 
         Button btncomplete = dialogView.findViewById(R.id.buttontn);
@@ -576,11 +596,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             public void onClick(View v) {
 
 
-                if(offline_payment){
+                if (offline_payment) {
                     startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
                     finish();
 
-                }else {
+                } else {
                     String value = "254" + stk_number.getText().toString().substring(1);
 
                     stkPushMethod(value);
@@ -620,8 +640,22 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             app.setAuttoken(token);
                             app.setPhone_no(phone_no);
 
-                            checkAssigned();
-                            Post_Device_fcm(token);
+
+                            if (asigned = false) {
+
+
+                                checkAssigned();
+                                Post_Device_fcm(token);
+
+
+
+                            } else {
+                                Log.e("Do Nothing", "..........pull data..................");
+                                pulldata();
+
+                            }
+
+
 
 
                         }
@@ -699,15 +733,13 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
 
 
-                            }else{
-                                Toast.makeText(getApplicationContext(),""+data.getString("ResultDesc"),Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "" + data.getString("ResultDesc"), Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
 
                         }
-
-
 
 
                         paybillalertDialog.dismiss();
@@ -899,6 +931,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         } else {
             Log.e("Do Nothing", "............................");
+            handler.removeMessages(0);
+
 
         }
     }
@@ -1310,6 +1344,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     String receiver_name = obj.getString("receiver_name");
                                     String sendername = obj.getString("sendername");
 
+                                    String rider_amount = obj.getString("rider_amount");
+                                    String client_cost = obj.getString("client_cost");
+
                                     accepted = obj.getString("status");
                                     app.setPackage_from(pickup_name);
                                     app.setPackage_to(dropoff_name);
@@ -1320,17 +1357,18 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     from = receiver_phone;
                                     app.setPackage_id(id);
 
-                                    amout_cost = Integer.parseInt(cost);
+                                    amout_cost = Integer.parseInt(client_cost);
 
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
-                                    txtFare.setText("Ksh " + cost);
+                                    txtFare.setText("Ksh " + rider_amount);
                                     txtcustomer_name.setText("Receiver phone: " + receiver_phone + "\nDist: " + distance + "km\nSender: " + sendername);
 
                                     pacakge = title;
 
                                     if (accepted.equalsIgnoreCase("Assigned")) {
-                                        assignedDialog();
+                                        profile.setTitle("         Ksh " + rider_amount);
+
 
                                         // prepare intent which is triggered if the
 
@@ -1348,7 +1386,15 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                                         // Will display the notification in the notification bar
                                         notificationManager.notify(1, builder.build());
+
+                                        assignedDialog();
+
+                                        handler.removeMessages(0);
+
+
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
+
+                                        profile.setTitle("         Ksh " + rider_amount);
 
                                         reprint = true;
                                         getPosition();
@@ -1386,6 +1432,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 ll_to_from.setVisibility(View.GONE);
                                 ll_call.setVisibility(View.GONE);
                                 ll_buttons.setVisibility(View.GONE);
+
+                                ll_navigation.setVisibility(View.GONE);
+                                profile.setTitle("         Waiting for nearest request...");
 
 
                             }
@@ -1445,6 +1494,179 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 //        });
 
     }
+    private void pulldata() {
+
+        Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.Delivery + "" + app.getUserid(),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+
+
+                        try {
+
+                            Log.e("Package", response.toString());
+
+                            JSONArray jsonArray = new JSONArray(response);
+
+                            if (jsonArray.length() > 0) {
+                                spin_kit.setVisibility(View.GONE);
+
+                                btnEndRide.setVisibility(View.VISIBLE);
+                                ll_straight.setVisibility(View.VISIBLE);
+                                ll_to_from.setVisibility(View.VISIBLE);
+                                ll_call.setVisibility(View.VISIBLE);
+                                ll_buttons.setVisibility(View.VISIBLE);
+
+                                for (int i = 0; i < jsonArray.length(); i++) {
+
+                                    JSONObject obj = jsonArray.getJSONObject(i);
+                                    String id = obj.getString("id");
+
+                                    String pickup_name = obj.getString("pickup_name");
+                                    String dropoff_name = obj.getString("dropoff_name");
+                                    String title = obj.getString("title");
+
+                                    String distance = obj.getString("distance");
+                                    String cost = obj.getString("cost");
+                                    String receiver_phone = obj.getString("receiver_phone");
+                                    String receiver_name = obj.getString("receiver_name");
+                                    String sendername = obj.getString("sendername");
+
+                                    String rider_amount = obj.getString("rider_amount");
+                                    String client_cost = obj.getString("client_cost");
+
+                                    accepted = obj.getString("status");
+                                    app.setPackage_from(pickup_name);
+                                    app.setPackage_to(dropoff_name);
+
+                                    app.setIs_cooperate(obj.getBoolean("is_cooperate"));
+
+                                    to = pickup_name;
+                                    from = receiver_phone;
+                                    app.setPackage_id(id);
+
+                                    amout_cost = Integer.parseInt(client_cost);
+
+                                    destination_location.setText(dropoff_name + ", kenya");
+                                    source_location.setText(pickup_name + ", kenya");
+                                    txtFare.setText("Ksh " + rider_amount);
+                                    txtcustomer_name.setText("Receiver phone: " + receiver_phone + "\nDist: " + distance + "km\nSender: " + sendername);
+
+                                    pacakge = title;
+
+                                    if (accepted.equalsIgnoreCase("Assigned")) {
+                                        profile.setTitle("         Ksh " + rider_amount);
+                                        // prepare intent which is triggered if the
+
+                                        handler.removeMessages(0);
+
+
+                                    } else if (accepted.equalsIgnoreCase("accepted")) {
+
+                                        profile.setTitle("         Ksh " + rider_amount);
+
+                                        reprint = true;
+                                        getPosition();
+
+
+                                    } else {
+                                        sendRequest();
+                                    }
+
+
+                                }
+
+
+                                QRGEncoder qrgEncoder = new QRGEncoder("Delivery Package identity: " + app.getPackage_id(), null, QRGContents.Type.TEXT, 1000);
+                                // Getting QR-Code as Bitmap
+                                bitmap = qrgEncoder.getBitmap();
+                                // Setting Bitmap to ImageView
+                                qrImage.setImageBitmap(bitmap);
+
+
+                                try {
+                                    BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+                                    bitmap2 = barcodeEncoder.encodeBitmap("Delivery Package identity: " + app.getPackage_id(), BarcodeFormat.CODE_128, 600, 400);
+                                    ImageView imageViewQrCode = (ImageView) findViewById(R.id.barcode_image);
+                                    imageViewQrCode.setImageBitmap(bitmap2);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+
+                                }
+
+
+                            } else {
+                                btnEndRide.setVisibility(View.GONE);
+                                ll_straight.setVisibility(View.GONE);
+                                ll_to_from.setVisibility(View.GONE);
+                                ll_call.setVisibility(View.GONE);
+                                ll_buttons.setVisibility(View.GONE);
+
+                                ll_navigation.setVisibility(View.GONE);
+                                profile.setTitle("         Waiting for nearest request...");
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("error", e.toString());
+
+
+                        }
+
+
+                    }
+
+                },
+
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //displaying the error in toast if occurrs
+                        Log.e("Error", "Error: " + error
+                                + "\nCause " + error.getCause()
+                                + "\nmessage" + error.getMessage());
+//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+        ) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+
+        //creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //adding the string request to request queue
+        requestQueue.add(stringRequest);
+
+//        requestQueue.addRequestFinishedListener(new RequestQueue.RequestFinishedListener<Object>() {
+//
+//            @Override
+//            public void onRequestFinished(Request<Object> request) {
+////                sendRequest();
+//
+//            }
+//        });
+
+    }
+
 
     public static String getAddressFromLatLng(Context context, LatLng latLng) {
         Geocoder geocoder;
@@ -1909,17 +2131,27 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 Log.e("Request", "Request received");
                 Log.e("Request", message);
 
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
+
+                if (asigned = false) {
+
+
+                    MainActivity.this.runOnUiThread(() -> {
                         Log.d("UI thread", "I am the UI thread");
 
                         Toast.makeText(MainActivity.this, "Request received", Toast.LENGTH_SHORT).show();
                         addNotification();
-                        checkAssigned();
+//                        checkAssigned();
 
 
-                    }
-                });
+                    });
+
+
+
+                } else {
+                    Log.e("Do Nothing", "............................");
+                    handler.removeMessages(0);
+
+                }
 
 
             }

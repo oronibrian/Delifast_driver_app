@@ -7,20 +7,32 @@
     android:background="@drawable/bg_card"
     android:baselineAligned="false"
     android:gravity="center"
-    android:orientation="horizontal"
+    android:layout_marginTop="@dimen/_10sdp"
+    android:orientation="vertical"
     android:padding="@dimen/notification_size">
+
+    <TextView
+        android:id="@+id/ll_navigation"
+        android:layout_width="60dp"
+        android:layout_height="@dimen/_50sdp"
+        android:layout_marginStart="@dimen/_60sdp"
+        android:layout_marginTop="@dimen/_1sdp"
+        android:layout_marginEnd="@dimen/_60sdp"
+        android:background="@drawable/round_bg"
+        android:gravity="center"
+        android:text="GO"
+        android:textColor="@color/colorOrangeLine" />
 
     <com.alespero.expandablecardview.ExpandableCardView
         android:id="@+id/profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAlignment="textStart"
         app:animationDuration="300"
         app:expandOnClick="true"
         app:inner_view="@layout/layout_bottom_bar"
         app:startExpanded="false"
-        android:textAlignment="center"
-        android:gravity="center"
-        app:title="          Package Delivery Details" />
+        app:title="                  Delivery Details" />
 
 
 </LinearLayout>

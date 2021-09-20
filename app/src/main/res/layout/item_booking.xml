@@ -51,16 +51,16 @@
                     tools:text="@string/txt_date" />
 
                 <TextView
-                    android:layout_below="@+id/tvDestination"
+                    android:id="@+id/tvConfirmed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/tvDestination"
                     android:layout_alignParentEnd="true"
                     android:drawablePadding="@dimen/spacing_small"
                     android:fontFamily="@font/googlesansregular"
                     android:gravity="center_vertical"
-                    android:text="@string/text_confirmed"
-                    android:textColor="@color/color_check"
-                    android:id="@+id/tvConfirmed"/>
+                    android:text="Complete"
+                    android:textColor="@color/color_check" />
             </RelativeLayout>
 
 

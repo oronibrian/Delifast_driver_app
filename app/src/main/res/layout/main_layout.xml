@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/ll_main"
-    android:background="@color/app_background"
+    android:background="@android:color/white"
     tools:context=".MainActivity">
 
     <View
@@ -14,45 +13,45 @@
         android:layout_height="@dimen/view_height"
         android:background="@drawable/bg_toolbar" />
 
-<!--    <androidx.appcompat.widget.Toolbar-->
-<!--        android:id="@+id/toolbar"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:background="@drawable/bg_toolbar"-->
-<!--        app:contentInsetStart="0dp"-->
-<!--        app:titleTextColor="@color/white">-->
+    <!--    <androidx.appcompat.widget.Toolbar-->
+    <!--        android:id="@+id/toolbar"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:background="@drawable/bg_toolbar"-->
+    <!--        app:contentInsetStart="0dp"-->
+    <!--        app:titleTextColor="@color/white">-->
 
-        <RelativeLayout
-            android:id="@+id/toolbar"
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="1">
 
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="1">
+            <com.github.angads25.toggle.widget.LabeledSwitch
+                android:id="@+id/swithch"
+                android:layout_width="123dp"
+                android:layout_height="45dp"
+                android:layout_margin="16dp"
+                android:textSize="14sp"
+                app:colorBorder="@color/purple_50"
+                app:colorOn="@color/green_300"
+                app:on="true"
+                app:textOff="OFFLINE"
+                app:textOn="ONLINE" />
 
 
-                <com.github.angads25.toggle.widget.LabeledSwitch
-                    android:id="@+id/swithch"
-                    android:layout_width="123dp"
-                    android:layout_height="45dp"
-                    android:layout_margin="16dp"
-                    android:textSize="14sp"
-                    app:colorBorder="@color/purple_50"
-                    app:colorOn="@color/green_300"
-                    app:textOn="ONLINE"
-                    app:textOff="OFFLINE"
-                    app:on="true" />
+        </LinearLayout>
+    </RelativeLayout>
 
-
-            </LinearLayout>
-        </RelativeLayout>
-
-<!--    </androidx.appcompat.widget.Toolbar>-->
+    <!--    </androidx.appcompat.widget.Toolbar>-->
 
     <RelativeLayout
         android:id="@+id/map_id"
@@ -62,13 +61,17 @@
         android:background="@drawable/bg_card"
         android:overScrollMode="never">
 
-        <fragment
-            android:id="@+id/map"
-            class="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <include layout="@layout/package_view" />
+
+        <!--        <fragment-->
+        <!--            android:id="@+id/map"-->
+        <!--            class="com.google.android.gms.maps.SupportMapFragment"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent" />-->
+
 
         <include
+
             android:id="@+id/bottom"
             layout="@layout/colapselayout" />
 

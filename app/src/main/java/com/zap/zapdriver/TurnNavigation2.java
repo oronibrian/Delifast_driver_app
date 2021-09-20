@@ -75,7 +75,7 @@ public class TurnNavigation2 extends AppCompatActivity implements OnMapReadyCall
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
-        setTheme(R.style.customInstructionView);
+//        setTheme(R.style.customInstructionView);
 
         app = (DriverApplication) getApplicationContext();
 

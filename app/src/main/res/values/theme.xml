@@ -1,80 +1,55 @@
-<resources>
-
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar.Bridge">
+    <style name="Theme.zapdriver" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/colorPrimary</item>
+        <item name="colorSecondaryVariant">@color/colorPrimaryDark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
 
+
+    </style>
+
+    <style name="Toolbar.Theme.Light.LightControls" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@color/white</item>
+    </style>
+
+    <style name="LoginTextInputLayoutStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <item name="colorAccent">@color/colorPrimaryDark</item>
+        <item name="boxStrokeColor">@color/colorPrimaryDark</item>
+        <item name="boxStrokeWidth">2dp</item>
+    </style>
+
+
+
+    <style name="Progressbar.White" parent="Theme.zapdriver">
+        <item name="colorControlActivated">@color/white</item>
+    </style>
+
+
+
+    <style name="AppTheme" parent="BaseTheme" />
+
+    <style name="BaseTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorPrimary</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">@color/colorOrangeLine</item>
+        <item name="android:dialogTheme">@style/Dialog.Theme</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="ProgressBarStyle">
+        <item name="colorAccent">@color/colorOrangeLine</item>
     </style>
 
-<!--    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />-->
-
-<!--    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />-->
-
-
-    <!-- Base application theme. -->
-    <style name="Theme.Shrine" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">#ffffff</item>
-        <item name="colorPrimaryDark">#e0e0e0</item>
-        <item name="colorAccent">#607d8b</item>
-        <item name="toolbarStyle">@style/Widget.Shrine.Toolbar</item>
-    </style>
-
-    <style name="Widget.Shrine.Toolbar" parent="Widget.AppCompat.Toolbar">
-        <item name="contentInsetStart">12dp</item>
-        <item name="titleTextAppearance">@style/TextAppearance.Shrine.Logo</item>
-    </style>
-
-    <style name="Widget.Shrine.CollapsingToolbar" parent="">
-        <item name="collapsedTitleTextAppearance">@style/TextAppearance.Shrine.Logo</item>
-        <item name="contentScrim">?attr/colorPrimary</item>
-        <item name="expandedTitleGravity">top</item>
-        <item name="expandedTitleMarginStart">124dp</item>
-        <item name="expandedTitleMarginTop">140dp</item>
-        <item name="expandedTitleTextAppearance">@style/TextAppearance.Shrine.Logo</item>
-        <item name="scrimVisibleHeightTrigger">140dp</item>
-    </style>
-
-    <style name="Widget.Shrine.CollapsingToolbarImage" parent="">
-        <item name="android:layout_marginTop">48dp</item>
-        <item name="android:layout_marginLeft">-124dp</item>
-        <item name="android:adjustViewBounds">true</item>
-    </style>
-
-    <style name="Widget.Shrine.CollapsingToolbarContent" parent="">
-        <item name="android:layout_marginTop">160dp</item>
-        <item name="android:layout_marginLeft">124dp</item>
-        <item name="android:layout_marginRight">16dp</item>
-        <item name="android:layout_gravity">top</item>
-        <item name="android:orientation">vertical</item>
-    </style>
-
-    <style name="TextAppearance.Shrine.Logo" parent="TextAppearance.AppCompat.Display3">
-        <item name="android:textAllCaps">true</item>
-        <item name="android:textSize">22sp</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="ThemeOverlay.Shrine.BottomNavigation" parent="">
-        <item name="colorPrimary">?attr/colorAccent</item>
-    </style>
-
-    <!--from Materialx--> <style name="Button.Primary" parent="@style/Widget.AppCompat.Button.Colored">
-    <item name="colorButtonNormal">@color/colorPrimary</item>
-    <item name="android:textColor">@android:color/white</item>
-</style>
-
-    <style name="Button.Accent" parent="@style/Widget.AppCompat.Button.Colored">
-        <item name="colorButtonNormal">@color/colorAccent</item>
-        <item name="android:textColor">@android:color/white</item>
-    </style>
 
     <style name="Button.Green" parent="@style/Widget.AppCompat.Button.Colored">
         <item name="colorButtonNormal">@color/light_green_500</item>
@@ -118,6 +93,21 @@
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 
+    <!--style for ripple library-->
+    <style name="RippleStyleWhite">
+        <item name="mrl_rippleOverlay">true</item>
+        <item name="mrl_rippleColor">#80FFFFFF</item>
+        <item name="mrl_rippleHover">true</item>
+        <item name="mrl_rippleAlpha">0.2</item>
+    </style>
+
+    <style name="RippleStyleBlack" parent="RippleStyleWhite">
+        <item name="mrl_rippleColor">#8096989A</item>
+    </style>
+
+    <style name="RippleStyleDark" parent="RippleStyleWhite">
+        <item name="mrl_rippleColor">#80000000</item>
+    </style>
 
     <style name="Dialog.Theme" parent="Theme.AppCompat.Light.Dialog">
         <item name="colorPrimary">@color/colorPrimary</item>
@@ -270,53 +260,17 @@
         <item name="windowActionBar">false</item>
     </style>
 
-
-
-    <!--style for ripple library-->
-    <style name="RippleStyleWhite">
-        <item name="mrl_rippleOverlay">true</item>
-        <item name="mrl_rippleColor">#80FFFFFF</item>
-        <item name="mrl_rippleHover">true</item>
-        <item name="mrl_rippleAlpha">0.2</item>
-    </style>
-
-    <style name="RippleStyleBlack" parent="RippleStyleWhite">
-        <item name="mrl_rippleColor">#8096989A</item>
-    </style>
-
-    <style name="RippleStyleDark" parent="RippleStyleWhite">
-        <item name="mrl_rippleColor">#80000000</item>
-    </style>
-
-
-
-    <!-- Base application theme. -->
-
-
-    <style name="NavigationMapRoute">
-        <!-- Colors -->
-        <item name="routeColor">@color/mapboxBlue</item>
-        <item name="routeModerateCongestionColor">@color/mapboxYellow</item>
-        <item name="routeSevereCongestionColor">@color/mapboxPink</item>
-        <item name="routeShieldColor">@color/mapboxWhite</item>
-
-        <!-- Scales -->
-        <item name="routeScale">1.0</item>
-    </style>
-
-    <style name="NavigationView" parent="Theme.AppCompat.NoActionBar">
-        <item name="navigationViewPrimary">@color/mapboxWhite</item>
-        <item name="navigationViewSecondary">@color/mapboxBlue</item>
-        <item name="navigationViewAccent">@color/mapboxPink</item>
+    <style name="WideDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+        <item name="android:windowBackground">@android:color/white</item>
 
     </style>
 
+    <style name="NoBackgroundDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@null</item>
+    </style>
 
-    <style name="customInstructionView" parent="Theme.AppCompat.NoActionBar">
-        <item name="navigationViewRouteStyle">@style/NavigationMapRoute</item>
-        <item name="navigationViewLocationLayerStyle">@style/NavigationLocationLayerStyle</item>
-        <item name="navigationViewDestinationMarker">@drawable/map_marker_light</item>
-        <item name="navigationViewRouteOverviewDrawable">@drawable/ic_route_preview</item>
-        <item name="navigationViewMapStyle">@string/mapbox_style_light</item> </style>
+
 
 </resources>

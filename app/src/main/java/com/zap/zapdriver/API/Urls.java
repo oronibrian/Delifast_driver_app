@@ -38,5 +38,11 @@ public class Urls {
 
     public static final String onlinepayment = Base2 + "mpesa/";
 
+
+    public static final String finace = Base + "v1/finance/?rider=";
+
+
+
+
     
 }

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3b6bb3</color>
-    <color name="colorPrimaryDark">#004198</color>
+
+    <color name="colorPrimary">#757fe7</color>
+    <color name="colorPrimaryDark">#3f53b4</color>
+    <color name="colorOrangeLine">#F9A21D</color>
+
+
     <color name="colorAccent">#D81B60</color>
     <color name="colorAccentLight">#FF80AB</color>
     <color name="overlay_dark_10">#1A000000</color>
@@ -14,8 +18,6 @@
     <color name="overlay_dark_80">#CC000000</color>
     <color name="overlay_dark_90">#E6000000</color>
     <color name="colorRouteLine">#FF4081</color>
-
-    <color name="colorOrangeLine">#fea418</color>
 
     <color name="mapboxGreen">#56b881</color>
     <color name="mapboxWhite">#ffffff</color>

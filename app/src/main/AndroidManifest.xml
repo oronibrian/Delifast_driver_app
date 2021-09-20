@@ -23,9 +23,13 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/Theme.zapdriver"
+
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name=".TurnNavigation3"
+            android:exported="true" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -48,7 +52,7 @@
         <activity android:name=".ScanReturnActivity" />
         <activity android:name=".My_Deliveries" />
         <activity android:name=".SignatureActivity" />
-        <activity android:name="TurnNavigation2"/>
+        <activity android:name=".TurnNavigation2" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
