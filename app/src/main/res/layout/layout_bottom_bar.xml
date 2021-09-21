@@ -60,6 +60,7 @@
                         android:gravity="start"
                         android:maxLines="1"
                         android:padding="@dimen/spacing_medium"
+                        android:visibility="gone"
                         android:singleLine="true"
                         android:textSize="@dimen/_17sdp"
                         android:textStyle="bold"

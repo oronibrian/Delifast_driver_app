@@ -52,6 +52,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -84,6 +85,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
@@ -149,8 +151,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     private ProgressDialog progressDialog;
     LabeledSwitch labeledSwitch;
     RelativeLayout map_id;
-    LinearLayout ll_straight, ll_to_from, ll_call, ll_buttons;
+    LinearLayout ll_straight, ll_call, ll_buttons;
     LinearLayout card_id_package, card_id_package_serach;
+    CardView ll_to_from;
     RelativeLayout ll_main;
     MarkerOptions markerOptions;
 
@@ -163,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LatLng rider_location;
 
     SpinKitView spin_kit;
-    TextView ll_navigation;
+    ImageView ll_navigation;
     ExpandableCardView profile;
 
     Boolean reprint = false;
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     Handler handler = new Handler();
     Runnable runnable;
-    int delay = 30 * 1000; //Delay for 30 seconds.  One second = 1000 milliseconds.
+    int delay = 10 * 1000; //Delay for 30 seconds.  One second = 1000 milliseconds.
     ArrayList<LatLng> formerlocations;
 
     private String androidIdd;
@@ -188,6 +191,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     Boolean offline_payment = false;
 
     int amout_cost = 0;
+    private BottomSheetDialog bottomSheetDialog;
+
 
 
     @Override
@@ -233,6 +238,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
         ll_navigation = findViewById(R.id.ll_navigation);
+
+        bottomSheetDialog = new BottomSheetDialog(this);
+
 
         //get the values of the settings options
 
@@ -287,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             app.setPassword(pass);
             app.setPhone_no(phone_no);
 
-            Request_token(user, pass);
+//            Request_token(user, pass);
 
             Log.e("email: ", String.valueOf(email));
 
@@ -641,21 +649,20 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             app.setPhone_no(phone_no);
 
 
-                            if (asigned = false) {
 
 
-                                checkAssigned();
-                                Post_Device_fcm(token);
-
-
-
-                            } else {
-                                Log.e("Do Nothing", "..........pull data..................");
-                                pulldata();
-
-                            }
-
-
+//                            if (asigned = false) {
+//
+//
+//                                checkAssigned();
+//                                Post_Device_fcm(token);
+//
+//
+//                            } else {
+//                                Log.e("Do Nothing", "..........pull data..................");
+//                                pulldata();
+//
+//                            }
 
 
                         }
@@ -912,7 +919,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             locationUtilObj.restart_location_update();
         }
 
-        if (asigned = false) {
+//        if (asigned = false) {
 
 
             handler.postDelayed(runnable = new Runnable() {
@@ -921,20 +928,22 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                     Log.e("checking", "............................");
 
-                    checkAssigned();
+//                    checkAssigned();
 
+                    checkAssigned();
+//                    Post_Device_fcm(token);
 
                     handler.postDelayed(runnable, delay);
                 }
             }, delay);
 
-
-        } else {
-            Log.e("Do Nothing", "............................");
-            handler.removeMessages(0);
-
-
-        }
+//
+//        } else {
+//            Log.e("Do Nothing", "............................");
+//            handler.removeMessages(0);
+//
+//
+//        }
     }
 
     private void initMap() {
@@ -1321,7 +1330,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                             if (jsonArray.length() > 0) {
                                 spin_kit.setVisibility(View.GONE);
-                                asigned = true;
 
                                 btnEndRide.setVisibility(View.VISIBLE);
                                 ll_straight.setVisibility(View.VISIBLE);
@@ -1369,23 +1377,28 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     if (accepted.equalsIgnoreCase("Assigned")) {
                                         profile.setTitle("         Ksh " + rider_amount);
 
+                                        addNotification();
 
                                         // prepare intent which is triggered if the
 
-                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
-                                        builder.setSmallIcon(android.R.drawable.ic_dialog_alert);
-                                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
-                                        builder.setContentIntent(pendingIntent);
-                                        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
-                                        builder.setContentTitle("Zap Delivery Request");
-                                        builder.setContentText("You have an active delivery request.");
-                                        builder.setSubText("Tap to view the request.");
+//                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
+//                                        builder.setSmallIcon(android.R.drawable.ic_dialog_alert);
+//                                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+//                                        PendingIntent pendingIntent = PendingIntent.getActivity(MainActivity.this, 0, intent, 0);
+//                                        builder.setContentIntent(pendingIntent);
+//                                        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+//                                        builder.setContentTitle("Zap Delivery Request");
+//                                        builder.setContentText("You have an active delivery request.");
+//                                        builder.setSubText("Tap to view the request.");
+//
+//                                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//
+//                                        // Will display the notification in the notification bar
+//                                        notificationManager.notify(1, builder.build());
 
-                                        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-                                        // Will display the notification in the notification bar
-                                        notificationManager.notify(1, builder.build());
+                                        if(bottomSheetDialog != null && bottomSheetDialog.isShowing()) {
+                                            return;
+                                        }
 
                                         assignedDialog();
 
@@ -1395,6 +1408,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
 
                                         profile.setTitle("         Ksh " + rider_amount);
+                                        asigned = true;
 
                                         reprint = true;
                                         getPosition();
@@ -1434,7 +1448,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 ll_buttons.setVisibility(View.GONE);
 
                                 ll_navigation.setVisibility(View.GONE);
-                                profile.setTitle("         Waiting for nearest request...");
+                                profile.setTitle(" Checking nearest request...");
 
 
                             }
@@ -1494,6 +1508,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 //        });
 
     }
+
     private void pulldata() {
 
         Log.e("url", Urls.Delivery + "" + app.getUserid().toString());
@@ -1566,7 +1581,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
 
-                                        profile.setTitle("         Ksh " + rider_amount);
+                                        profile.setTitle("                     Ksh " + rider_amount);
 
                                         reprint = true;
                                         getPosition();
@@ -1606,7 +1621,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 ll_buttons.setVisibility(View.GONE);
 
                                 ll_navigation.setVisibility(View.GONE);
-                                profile.setTitle("         Waiting for nearest request...");
+                                profile.setTitle("    Waiting for nearest request...");
 
 
                             }
@@ -1682,41 +1697,76 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     }
 
     public void assignedDialog() {
-        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
-                .setTopColorRes(R.color.green_500)
-                .setButtonsColorRes(R.color.black)
-                .setIcon(R.drawable.scooter)
-                .setCancelable(false)
-                .setTitle("Package Request")
-                .setMessage("You have been assigned a package")
-                .setPositiveButton("Accept", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+
+        bottomSheetDialog.setContentView(R.layout.bottom_sheet_assigment_dialog);
+        bottomSheetDialog.setCancelable(false);
 
 
-                        card_id_package_serach.setVisibility(View.GONE);
-                        card_id_package.setVisibility(View.VISIBLE);
+        Button bt_join = bottomSheetDialog.findViewById(R.id.bt_join);
+        Button bt_decline = bottomSheetDialog.findViewById(R.id.bt_decline);
 
-                        acceptPackage(app.getPackage_id(), app.getUserid());
+        bt_join.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                card_id_package_serach.setVisibility(View.GONE);
+                card_id_package.setVisibility(View.VISIBLE);
+                acceptPackage(app.getPackage_id(), app.getUserid());
+                sendRequest();
+                bottomSheetDialog.dismiss();
 
-                        sendRequest();
-
-
-                    }
-                })
-                .setNegativeButton("Reject", new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-
-                        rejectPackage(app.getPackage_id(), app.getUserid());
-
-                        checkAssigned();
+            }
+        });
 
 
-                    }
-                })
-                .show();
+        bt_decline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rejectPackage(app.getPackage_id(), app.getUserid());
+                checkAssigned();
+                bottomSheetDialog.dismiss();
+
+            }
+        });
+
+
+        bottomSheetDialog.show();
+
+
+//        new LovelyStandardDialog(this, LovelyStandardDialog.ButtonLayout.VERTICAL)
+//                .setTopColorRes(R.color.green_500)
+//                .setButtonsColorRes(R.color.black)
+//                .setIcon(R.drawable.scooter)
+//                .setCancelable(false)
+//                .setTitle("Package Request")
+//                .setMessage("You have been assigned a package")
+//                .setPositiveButton("Accept", new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//
+//
+//                        card_id_package_serach.setVisibility(View.GONE);
+//                        card_id_package.setVisibility(View.VISIBLE);
+//
+//                        acceptPackage(app.getPackage_id(), app.getUserid());
+//
+//                        sendRequest();
+//
+//
+//                    }
+//                })
+//                .setNegativeButton("Reject", new View.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(View v) {
+//
+//                        rejectPackage(app.getPackage_id(), app.getUserid());
+//
+//                        checkAssigned();
+//
+//
+//                    }
+//                })
+//                .show();
     }
 
 
@@ -2132,26 +2182,26 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 Log.e("Request", message);
 
 
-                if (asigned = false) {
+//                if (asigned = false) {
 
 
-                    MainActivity.this.runOnUiThread(() -> {
-                        Log.d("UI thread", "I am the UI thread");
+                MainActivity.this.runOnUiThread(() -> {
+                    Log.d("UI thread", "I am the UI thread");
 
-                        Toast.makeText(MainActivity.this, "Request received", Toast.LENGTH_SHORT).show();
-                        addNotification();
-//                        checkAssigned();
-
-
-                    });
+                    Toast.makeText(MainActivity.this, "Request received", Toast.LENGTH_SHORT).show();
+//                        addNotification();
+                    checkAssigned();
 
 
+                });
 
-                } else {
-                    Log.e("Do Nothing", "............................");
-                    handler.removeMessages(0);
 
-                }
+//                } else {
+//                    Log.e("Do Nothing", "............................");
+//                    handler.removeMessages(0);
+//
+//
+//                }
 
 
             }

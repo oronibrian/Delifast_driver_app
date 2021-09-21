@@ -43,6 +43,7 @@
                     android:layout_marginLeft="@dimen/spacing_middle"
                     android:layout_marginRight="@dimen/spacing_middle"
                     android:text="KSH"
+                    android:textSize="@dimen/_20sdp"
                     android:textAppearance="@style/TextAppearance.AppCompat.Caption"
                     android:textColor="@color/grey_20"
                     app:fontFamily="sans-serif-medium" />
@@ -51,7 +52,7 @@
                     android:id="@+id/txt_rider_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="350.000"
+                    android:text="0.0"
                     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                     android:textColor="@color/white"
                     android:textSize="@dimen/_23sdp"
