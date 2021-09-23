@@ -24,9 +24,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.zapdriver"
-
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name=".ScanBarcodeActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ScanCodeActivity"
+            android:exported="true" />
         <activity
             android:name=".TurnNavigation3"
             android:exported="true" />
@@ -66,16 +71,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".LoginActivity" />
-
-        <service
-            android:name=".service.TrackerService"
-            android:enabled="true"
-            android:exported="true" />
-        <service android:name=".service.FirebaseMessageReceiver">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
     </application>
 
 </manifest>

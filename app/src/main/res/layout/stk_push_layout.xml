@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical"
@@ -76,8 +76,8 @@
                         android:layout_marginTop="@dimen/spacing_mlarge"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:visibility="gone"
-                        android:padding="@dimen/spacing_middle">
+                        android:padding="@dimen/spacing_middle"
+                        android:visibility="gone">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -115,9 +115,9 @@
                         android:layout_marginTop="@dimen/spacing_mlarge"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:visibility="gone"
+                        android:padding="@dimen/spacing_middle"
 
-                        android:padding="@dimen/spacing_middle">
+                        android:visibility="gone">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -126,14 +126,42 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                                android:drawableLeft="@drawable/ic_check_circle"
+                                android:drawableTint="@color/green_A200"
+                                android:text="Lipa na M-PESA" />
+
+                            <TextView
+                                android:id="@+id/checkBox1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                                android:drawableLeft="@drawable/ic_check_circle"
+                                android:drawableTint="@color/green_A200"
+                                android:text="Pay bill No:869032" />
+
+
+                            <TextView
                                 android:id="@+id/txt_offline"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:drawableLeft="@drawable/ic_check_circle"
+                                android:drawableTint="@color/green_A200"
                                 android:gravity="center_vertical"
-                                android:textStyle="normal"
+                                android:text="Amount: 300"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
                                 android:textSize="@dimen/_15sdp"
-                                android:text="Select Lipa na mpesa\nPaybill\npaybill no 869032\"
-                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1" />
+                                android:textStyle="normal" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                                android:drawableLeft="@drawable/ic_check_circle"
+                                android:drawableTint="@color/green_A200"
+                                android:text="Confirm" />
 
                         </LinearLayout>
 

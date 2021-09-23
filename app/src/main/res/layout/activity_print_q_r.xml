@@ -86,7 +86,7 @@
             android:background="@drawable/round_corner_green"
             android:paddingLeft="@dimen/spacing_mlarge"
             android:paddingRight="@dimen/spacing_mlarge"
-            android:text="Continue"
+            android:text="Home"
             android:textColor="@android:color/white"
             android:visibility="visible" />
 

@@ -60,10 +60,10 @@
                         android:gravity="start"
                         android:maxLines="1"
                         android:padding="@dimen/spacing_medium"
-                        android:visibility="gone"
                         android:singleLine="true"
                         android:textSize="@dimen/_17sdp"
                         android:textStyle="bold"
+                        android:visibility="gone"
                         tools:text="ksh" />
 
                     <TextView
@@ -108,9 +108,6 @@
             <!--Second Phase-->
 
 
-
-
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -124,6 +121,7 @@
 
 
                 <LinearLayout
+                    android:id="@+id/ll_end_ride"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:background="@android:color/white"
@@ -312,22 +310,53 @@
                             android:textSize="@dimen/font_small"
                             android:visibility="gone" />
 
-                        <TextView
-                            android:id="@+id/tvscan"
-                            android:layout_width="match_parent"
+                        <LinearLayout
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
                             android:layout_weight="1"
-                            android:background="?selectableItemBackgroundBorderless"
-                            android:clickable="true"
-                            android:drawableTop="@drawable/print"
-                            android:drawablePadding="@dimen/spacing_small"
-                            android:focusable="true"
-                            android:fontFamily="@font/googlesansbold"
-                            android:gravity="center"
-                            android:padding="@dimen/spacing_small"
-                            android:text="Pick &amp; Print"
-                            android:textColor="@color/textchild"
-                            android:textSize="@dimen/font_small" />
+                            android:gravity="center_vertical"
+                            android:orientation="vertical">
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="@dimen/_120sdp"
+                                android:layout_height="match_parent"
+                                app:cardCornerRadius="12dp"
+                                android:layout_gravity="center"
+                                app:cardElevation="12dp"
+                                app:cardUseCompatPadding="true">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/spacing_small"
+                                    android:gravity="center_vertical"
+                                    android:orientation="vertical">
+
+                                    <ImageView
+                                        android:layout_width="@dimen/_40sdp"
+                                        android:layout_height="@dimen/_30sdp"
+                                        android:layout_gravity="center"
+                                        android:src="@drawable/ic_code_scanner_auto_focus_on"
+                                        app:tint="@color/colorPrimaryDark" />
+
+                                    <TextView
+                                        android:id="@+id/tvscan"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="?selectableItemBackgroundBorderless"
+                                        android:clickable="true"
+                                        android:drawablePadding="@dimen/spacing_small"
+                                        android:focusable="true"
+                                        android:fontFamily="@font/googlesansbold"
+                                        android:gravity="center"
+                                        android:padding="@dimen/spacing_small"
+                                        android:text="SCAN "
+                                        android:textColor="@color/textchild"
+                                        android:textSize="@dimen/_10sdp" />
+                                </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+                        </LinearLayout>
 
 
                         <LinearLayout

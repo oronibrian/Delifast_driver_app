@@ -122,7 +122,7 @@ public class PrintQRActivity extends AppCompatActivity {
 
 //                createPdf();
 //                showDialog(PrintQRActivity.this);
-                startActivity(new Intent(PrintQRActivity.this, TurnNavigation2.class));
+                startActivity(new Intent(PrintQRActivity.this, MainActivity.class));
                 finish();
 
             }
@@ -175,6 +175,7 @@ public class PrintQRActivity extends AppCompatActivity {
                                                             "[C]<u><font size='small'>Zap Logistics</font></u>\n" +
                                                             "[L]\n" +
                                                             "[C]\n" + mydate +
+                                                            "[C]\n" +"ZAP0000-"+ app.getPackage_id() +
                                                             "[L]\n" +
                                                             "[C]================================\n" +
                                                             "[L]\n" +

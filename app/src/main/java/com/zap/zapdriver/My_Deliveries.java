@@ -42,6 +42,7 @@ public class My_Deliveries extends AppCompatActivity {
     Boolean asigned = false;
 
     TextView txt_rider_amount;
+    int total_sum = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,6 +163,7 @@ public class My_Deliveries extends AppCompatActivity {
         Log.e("url", Urls.finace + "" + app.getUserid().toString());
 
 
+        total_sum = 0;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.finace + "" + app.getUserid(),
                 new Response.Listener<String>() {
 
@@ -179,12 +181,14 @@ public class My_Deliveries extends AppCompatActivity {
 
                                 JSONObject obj = jsonArray.getJSONObject(i);
 
-                                String total_rider_amount = obj.getString("total_rider_amount");
+                                String total_rider_amount = obj.getString("balance");
 
-                                txt_rider_amount.setText(total_rider_amount);
+                                total_sum = total_sum + Integer.parseInt(total_rider_amount);
 
 
                             }
+                            txt_rider_amount.setText(""+total_sum);
+
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -318,10 +322,17 @@ public class My_Deliveries extends AppCompatActivity {
             videoModel.setDropoff_name(jsonObject.optString("dropoff_name"));
             videoModel.setDistance(jsonObject.optString("distance"));
 
+            videoModel.setStatus(jsonObject.optString("status"));
+
             videoModel.setCost(jsonObject.optString("rider_amount"));
             videoModel.setPay_now(jsonObject.optBoolean("pay_now"));
 
             videoModelArrayList.add(videoModel);
+
+            if(jsonObject.optString("status").equalsIgnoreCase("delivered")) {
+                total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount"));
+            }
+
 
 
         }

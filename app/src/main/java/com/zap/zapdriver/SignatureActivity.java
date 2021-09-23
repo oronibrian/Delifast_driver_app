@@ -41,7 +41,7 @@ public class SignatureActivity extends AppCompatActivity {
     private Button mSaveButton;
     DriverApplication app;
     TextView txt_from;
-    EditText receiver_phone;
+    EditText receiver_phone,receiver_name;
     CheckBox receiver, no_receiver;
     private RadioGroup radioSexGroup;
     private RadioButton radioSexButton;
@@ -62,9 +62,10 @@ public class SignatureActivity extends AppCompatActivity {
         mSaveButton = (Button) findViewById(R.id.save_button);
         txt_from = findViewById(R.id.txt_from);
         receiver_phone = findViewById(R.id.receiver_phone);
+        receiver_name= findViewById(R.id.receiver_name);
 
         card_details = findViewById(R.id.card_details);
-        card_details.setVisibility(View.GONE);
+        card_details.setVisibility(View.VISIBLE);
         mSaveButton.setVisibility(View.GONE);
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
         String user = sharedPreferences.getString("username", "");
@@ -172,6 +173,7 @@ public class SignatureActivity extends AppCompatActivity {
 
 
                     String strUserName = receiver_phone.getText().toString();
+
                     if (strUserName.trim().equals("")) {
                         Toast.makeText(SignatureActivity.this, "Phone number required ", Toast.LENGTH_SHORT).show();
                         return;
@@ -191,7 +193,9 @@ public class SignatureActivity extends AppCompatActivity {
                 } else {
 
 
-                    update_package_Complete(app.getPackage_id(), app.getUserid(), app.getPhone_no());
+//                    update_package_Complete(app.getPackage_id(), app.getUserid(), app.getPhone_no());
+                    update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(),receiver_name.getText().toString());
+
 
 
                 }
@@ -288,7 +292,7 @@ public class SignatureActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString());
+                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(),receiver_name.getText().toString());
 
 
             }
@@ -442,10 +446,10 @@ public class SignatureActivity extends AppCompatActivity {
     }
 
 
-    public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id) {
+    public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id,String name) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id;
+        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id+"/"+name;
         Log.e("URL", url);
 
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,

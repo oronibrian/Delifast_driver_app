@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -60,12 +61,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.messaging.FirebaseMessaging;
+
 import com.yarolegovich.lovelydialog.LovelyStandardDialog;
 import com.zap.zapdriver.API.Urls;
 import com.zap.zapdriver.Modules.DirectionFinder;
@@ -109,7 +105,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
     View v;
     private static final int PERMISSIONS_REQUEST = 1;
 
-    private DatabaseReference databaseReference;
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     AllianceLoader allianceLoader;
@@ -121,8 +116,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
     ArrayList<LatLng> formerlocations;
 
     private String androidIdd;
-    DatabaseReference usersRef;
-    LinearLayout ll_navigation;
+    ImageView ll_navigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,7 +170,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("Locations");
 
         if (user.equals("")) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -189,37 +182,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
 
             Log.e("Name: ", app.getUsername());
 
-            usersRef = databaseReference.child(app.getUsername());
-
-            usersRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    try {
-                        String databaseLatitudeString = dataSnapshot.child("latitude").getValue().toString().substring(1, dataSnapshot.child("latitude").getValue().toString().length() - 1);
-                        String databaseLongitudedeString = dataSnapshot.child("longitude").getValue().toString().substring(1, dataSnapshot.child("longitude").getValue().toString().length() - 1);
-
-                        String[] stringLat = databaseLatitudeString.split(", ");
-                        Arrays.sort(stringLat);
-                        String latitude = stringLat[stringLat.length - 1].split("=")[1];
-
-                        String[] stringLong = databaseLongitudedeString.split(", ");
-                        Arrays.sort(stringLong);
-                        String longitude = stringLong[stringLong.length - 1].split("=")[1];
-//                    mMap.clear();
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
 
             checkAssigned();
 
@@ -335,26 +297,7 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
         navigationView.setNavigationItemSelectedListener(this);
 
 
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w("TAG", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
 
-                        // Get new FCM registration token
-                        String token = task.getResult();
-
-                        // Log and toast
-                        Log.e("TAG", "FCM Found: " + token);
-                        Log.e("Name", ": " + app.getUserid());
-                        app.setFcm_device_token(token);
-
-
-                    }
-                });
 
 
     }
@@ -812,10 +755,6 @@ public class MainActivity2 extends AppCompatActivity implements OnMapReadyCallba
             item = latLng;
         }
 
-
-        databaseReference.child(app.getUsername()).child("latitude").push().setValue(Double.toString(location.getLatitude()));
-        databaseReference.child(app.getUsername()).child("longitude").push().setValue(Double.toString(location.getLongitude()));
-//
 
         //Place current location marker
 //        float bearing = (float) bearingBetweenLocations(item, latLng);

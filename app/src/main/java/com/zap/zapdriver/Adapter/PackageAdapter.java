@@ -48,18 +48,25 @@ public class PackageAdapter extends RecyclerView.Adapter<PackageAdapter.BookingV
         holder1.mTvDuration.setText(mBookingModel.getTitle());
         holder1.mTvStartTime.setText(mBookingModel.getPickup_name());
         holder1.mTvSeatNo.setText(mBookingModel.getDropoff_name());
-        holder1.mTvEndTime.setText(mBookingModel.getDistance());
-        holder1.mTvPNRNo.setText(mBookingModel.getCost());
-        holder1.mTvTicketNo.setText(mBookingModel.getDistance());
+        holder1.mTvEndTime.setText(mBookingModel.getDistance() + " km");
+        holder1.mTvPNRNo.setText("KES: " + mBookingModel.getCost());
+        holder1.mTvTicketNo.setText(mBookingModel.getDistance() + " km");
 
-        if(mBookingModel.getPay_now()){
+        if (mBookingModel.getStatus().equalsIgnoreCase("delivered")) {
 
             holder1.statusimage.setImageResource(R.drawable.ic_completed);
 
-        }else{
+        } else if (mBookingModel.getStatus().equalsIgnoreCase("canceled")) {
+
             holder1.statusimage.setImageResource(R.drawable.ic_canceled);
 
+        } else {
+
+            holder1.statusimage.setImageResource(R.drawable.riderremove);
+
         }
+
+        holder1.mTvConfirm.setText(mBookingModel.getStatus());
 
         holder1.mRlContent.setOnClickListener(new View.OnClickListener() {
             @Override

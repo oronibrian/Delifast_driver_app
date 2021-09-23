@@ -87,7 +87,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.zxing.BarcodeFormat;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.squareup.picasso.Picasso;
@@ -152,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LabeledSwitch labeledSwitch;
     RelativeLayout map_id;
     LinearLayout ll_straight, ll_call, ll_buttons;
-    LinearLayout card_id_package, card_id_package_serach;
+    LinearLayout card_id_package, card_id_package_serach,ll_end_ride;
     CardView ll_to_from;
     RelativeLayout ll_main;
     MarkerOptions markerOptions;
@@ -235,6 +234,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         spin_kit = findViewById(R.id.spin_kit);
         ll_buttons = findViewById(R.id.ll_buttons);
         profile = findViewById(R.id.profile);
+
+        ll_end_ride= findViewById(R.id.ll_end_ride);
 
 
         ll_navigation = findViewById(R.id.ll_navigation);
@@ -352,14 +353,20 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         saveToInternalSorageBarcode(bitmap2);
 //                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
 
-                        if (reprint) {
-                            PickPackage(app.getPackage_id(), app.getUserid());
-                        } else {
-                            PickPackage(app.getPackage_id(), app.getUserid());
 
-                            Toast.makeText(MainActivity.this, "Re-printing", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(), ScanBarcodeActivity.class));
 
-                        }
+
+
+
+//                        if (reprint) {
+//                            PickPackage(app.getPackage_id(), app.getUserid());
+//                        } else {
+////                            PickPackage(app.getPackage_id(), app.getUserid());
+//
+//                            Toast.makeText(MainActivity.this, "Re-printing", Toast.LENGTH_SHORT).show();
+//
+//                        }
 
 
                     } catch (Exception e) {
@@ -373,32 +380,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             }
         });
 
-
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(new OnCompleteListener<String>() {
-                    @Override
-                    public void onComplete(@NonNull Task<String> task) {
-                        if (!task.isSuccessful()) {
-                            Log.e("TAG", "Fetching FCM registration token failed", task.getException());
-                            return;
-                        }
-
-                        // Get new FCM registration token
-                        String token = task.getResult();
-
-                        // Log and toast
-                        Log.i("TAG", "FCM Found: " + token);
-                        Log.i("Name", ": " + app.getUserid());
-                        Log.i("email", ": " + app.getUsername());
-
-                        app.setFcm_device_token(token);
-//                        Post_Device_fcm(token);
-
-//                        Authorize_token();
-
-
-                    }
-                });
 
 
         btncall.setOnClickListener(new View.OnClickListener() {
@@ -561,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         TextView txt_offline = dialogView.findViewById(R.id.txt_offline);
 
-        txt_offline.setText("Select Lipa na mpesa\nPaybill no 869032\nAmount: " + amout_cost);
+        txt_offline.setText("KES: " + amout_cost);
 
 
         online.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -647,6 +628,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                             app.setAuttoken(token);
                             app.setPhone_no(phone_no);
+
+                            pulldata();
 
 
 
@@ -855,6 +838,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             fos.close();
 
             Intent i = new Intent(MainActivity.this, PrintQRActivity.class);
+
             i.putExtra("data", data);
             startActivity(i);
 
@@ -928,7 +912,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                     Log.e("checking", "............................");
 
-//                    checkAssigned();
 
                     checkAssigned();
 //                    Post_Device_fcm(token);
@@ -1379,6 +1362,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                                         addNotification();
 
+                                        ll_end_ride.setVisibility(View.GONE);
+
                                         // prepare intent which is triggered if the
 
 //                                        NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this);
@@ -1406,6 +1391,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
                                     } else if (accepted.equalsIgnoreCase("accepted")) {
+                                        ll_end_ride.setVisibility(View.GONE);
 
                                         profile.setTitle("         Ksh " + rider_amount);
                                         asigned = true;

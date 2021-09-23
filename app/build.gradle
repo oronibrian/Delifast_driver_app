@@ -55,14 +55,14 @@ dependencies {
 
 
     //firebase
-    implementation platform('com.google.firebase:firebase-bom:26.0.0')
+//    implementation platform('com.google.firebase:firebase-bom:26.0.0')
     implementation 'com.simmorsal.library:concealer_nested_scroll_view:2.0.0'
 
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-auth:21.0.1'
-    implementation 'com.google.firebase:firebase-database:20.0.2'
+//    implementation 'com.google.firebase:firebase-analytics'
+//    implementation 'com.google.firebase:firebase-auth:21.0.1'
+//    implementation 'com.google.firebase:firebase-database:20.0.2'
     implementation 'com.agrawalsuneet.androidlibs:dotsloader:1.4'
-    implementation 'com.google.firebase:firebase-messaging:22.0.0'
+//    implementation 'com.google.firebase:firebase-messaging:22.0.0'
 
     implementation 'com.yarolegovich:lovely-dialog:1.1.1'
 

@@ -108,7 +108,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Request widthrawal"
+                                android:text="Payment"
                                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                                 android:textColor="@color/grey_60"
                                 android:textStyle="bold" />
@@ -116,7 +116,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Every saturday"
+                                android:text="Every friday at 10AM"
                                 android:textAppearance="@style/TextAppearance.AppCompat.Caption"
                                 android:textColor="@color/red_300" />
 
@@ -127,6 +127,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:text="Withdraw"
+                            android:visibility="gone"
                             android:theme="@style/Button.Blue.Borderless" />
 
                     </LinearLayout>
@@ -160,9 +161,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/spacing_middle"
                         android:layout_marginRight="@dimen/spacing_middle"
-                        android:text="@string/app_name"
+                        android:text="Only delivered trips will be credited"
                         android:textAppearance="@style/TextAppearance.AppCompat.Title"
                         android:textColor="@android:color/white"
+                        android:textSize="@dimen/_13sdp"
                         app:fontFamily="sans-serif-medium" />
 
                 </LinearLayout>

@@ -152,8 +152,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
-                            android:checked="false"
                             android:layout_weight="0.5"
+                            android:checked="false"
+                            android:visibility="gone"
                             android:text="Receiver"
                             android:textSize="18sp" />
 
@@ -164,6 +165,7 @@
                             android:layout_gravity="center"
                             android:layout_weight="0.13"
                             android:checked="false"
+                            android:visibility="gone"
                             android:text="No Receiver"
                             android:textSize="18sp" />
                     </RadioGroup>
@@ -201,10 +203,23 @@
                         android:layout_marginTop="@dimen/spacing_middle"
                         android:layout_marginRight="@dimen/spacing_mlarge"
                         android:layout_marginBottom="@dimen/spacing_middle"
-                        android:text="Enter Receiver Phone"
+                        android:text="Enter Receiver name and Phone"
                         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                         android:textColor="@color/grey_90"
                         app:fontFamily="sans-serif-medium" />
+
+                    <EditText
+                        android:id="@+id/receiver_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/spacing_mlarge"
+                        android:layout_marginTop="@dimen/spacing_middle"
+                        android:layout_marginRight="@dimen/spacing_mlarge"
+                        android:layout_marginBottom="@dimen/spacing_middle"
+                        android:gravity="center_vertical"
+                        android:hint="Receiver Name"
+                        android:inputType="textPersonName" />
+
 
                     <EditText
                         android:id="@+id/receiver_phone"
@@ -215,7 +230,7 @@
                         android:layout_marginRight="@dimen/spacing_mlarge"
                         android:layout_marginBottom="@dimen/spacing_middle"
                         android:gravity="center_vertical"
-                        android:hint="phone number"
+                        android:hint="Phone number"
                         android:inputType="phone" />
 
 
