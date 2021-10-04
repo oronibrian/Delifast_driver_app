@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,7 @@ import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
+
 import com.zap.zapdriver.API.Urls;
 
 import java.util.List;
@@ -38,6 +40,7 @@ public class ScanBarcodeActivity extends AppCompatActivity {
     TextView scanText;
     Button btnsubmit;
     DriverApplication app;
+    ImageView img_done;
 
 
     @Override
@@ -47,6 +50,7 @@ public class ScanBarcodeActivity extends AppCompatActivity {
 
         scanText = findViewById(R.id.scanText);
         btnsubmit = findViewById(R.id.btnsubmit);
+        img_done = findViewById(R.id.img_done);
 
         app = (DriverApplication) getApplicationContext();
 
@@ -72,6 +76,7 @@ public class ScanBarcodeActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(ScanBarcodeActivity.this, result.getText(), Toast.LENGTH_SHORT).show();
                         scanText.setText(result.getText());
+                        img_done.setVisibility(View.VISIBLE);
                     }
                 });
             }

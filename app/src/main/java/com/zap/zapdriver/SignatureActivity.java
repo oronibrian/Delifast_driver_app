@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,10 +39,10 @@ import java.util.Map;
 
 public class SignatureActivity extends AppCompatActivity {
     private Button mClearButton;
-    private Button mSaveButton;
+    private Button mSaveButton, btn_return, btncall_owner;
     DriverApplication app;
     TextView txt_from;
-    EditText receiver_phone,receiver_name;
+    EditText receiver_phone, receiver_name;
     CheckBox receiver, no_receiver;
     private RadioGroup radioSexGroup;
     private RadioButton radioSexButton;
@@ -49,6 +50,8 @@ public class SignatureActivity extends AppCompatActivity {
 
     AlertDialog mpesaalertDialog, paybillalertDialog;
     CardView card_details;
+    String number = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +65,13 @@ public class SignatureActivity extends AppCompatActivity {
         mSaveButton = (Button) findViewById(R.id.save_button);
         txt_from = findViewById(R.id.txt_from);
         receiver_phone = findViewById(R.id.receiver_phone);
-        receiver_name= findViewById(R.id.receiver_name);
+        receiver_name = findViewById(R.id.receiver_name);
+        btn_return = findViewById(R.id.btn_return);
+        btncall_owner = findViewById(R.id.btncall_owner);
 
         card_details = findViewById(R.id.card_details);
         card_details.setVisibility(View.VISIBLE);
-        mSaveButton.setVisibility(View.GONE);
+        mSaveButton.setVisibility(View.VISIBLE);
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
         String user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
@@ -194,13 +199,32 @@ public class SignatureActivity extends AppCompatActivity {
 
 
 //                    update_package_Complete(app.getPackage_id(), app.getUserid(), app.getPhone_no());
-                    update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(),receiver_name.getText().toString());
-
+                    update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(), receiver_name.getText().toString());
 
 
                 }
 
 
+            }
+        });
+
+
+        btn_return.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), ScanReturnActivity.class));
+                finish();
+
+            }
+        });
+
+
+        btncall_owner.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent callIntent = new Intent(Intent.ACTION_CALL);
+                callIntent.setData(Uri.parse("tel:" + number));
+                startActivity(callIntent);
             }
         });
     }
@@ -292,7 +316,7 @@ public class SignatureActivity extends AppCompatActivity {
             public void onClick(View v) {
 
 
-                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(),receiver_name.getText().toString());
+                update_package_Complete(app.getPackage_id(), app.getUserid(), receiver_phone.getText().toString(), receiver_name.getText().toString());
 
 
             }
@@ -318,7 +342,6 @@ public class SignatureActivity extends AppCompatActivity {
 
                         try {
 
-                            Log.e("response", response.toString());
 
                             JSONArray jsonArray = new JSONArray(response);
 
@@ -336,7 +359,16 @@ public class SignatureActivity extends AppCompatActivity {
                                     String cost = obj.getString("cost");
                                     String receiver_phone = obj.getString("receiver_phone");
 
+
+                                   String phn = obj.getString("sender_phone");
+
+
+                                    number = "+254" + phn.substring(1);
+
+
                                     app.setPackage_id(id);
+
+                                    Log.e("number", number.toString());
 
 
                                     txt_from.setText("Package: " + title + "\n Receiver: " + receiver_phone + " \nDistance: " + distance + "km");
@@ -446,10 +478,10 @@ public class SignatureActivity extends AppCompatActivity {
     }
 
 
-    public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id,String name) {
+    public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id, String name) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id+"/"+name;
+        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id + "/" + name;
         Log.e("URL", url);
 
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,

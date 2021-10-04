@@ -18,7 +18,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Address;
@@ -83,8 +82,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 import com.google.zxing.BarcodeFormat;
@@ -151,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     LabeledSwitch labeledSwitch;
     RelativeLayout map_id;
     LinearLayout ll_straight, ll_call, ll_buttons;
-    LinearLayout card_id_package, card_id_package_serach,ll_end_ride;
+    LinearLayout card_id_package, card_id_package_serach, ll_end_ride;
     CardView ll_to_from;
     RelativeLayout ll_main;
     MarkerOptions markerOptions;
@@ -192,6 +189,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     int amout_cost = 0;
     private BottomSheetDialog bottomSheetDialog;
 
+    ImageView imageView;
 
 
     @Override
@@ -235,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         ll_buttons = findViewById(R.id.ll_buttons);
         profile = findViewById(R.id.profile);
 
-        ll_end_ride= findViewById(R.id.ll_end_ride);
+        ll_end_ride = findViewById(R.id.ll_end_ride);
 
 
         ll_navigation = findViewById(R.id.ll_navigation);
@@ -282,6 +280,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         TextView inf = header.findViewById(R.id.textView_details);
         inf.setText(name + " " + last_name + "\n" + email);
 
+
+        imageView = header.findViewById(R.id.imageView);
+
+
+        Picasso.get().load(R.drawable.zap).into(imageView);
 
         markerPoints = new ArrayList<>();
 
@@ -357,8 +360,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         startActivity(new Intent(getApplicationContext(), ScanBarcodeActivity.class));
 
 
-
-
 //                        if (reprint) {
 //                            PickPackage(app.getPackage_id(), app.getUserid());
 //                        } else {
@@ -379,7 +380,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
             }
         });
-
 
 
         btncall.setOnClickListener(new View.OnClickListener() {
@@ -632,8 +632,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             pulldata();
 
 
-
-
 //                            if (asigned = false) {
 //
 //
@@ -765,6 +763,59 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 5000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        queue.add(putRequest);
+
+
+    }
+
+
+    private void PostLocationpath(String location) {
+
+        RequestQueue queue = Volley.newRequestQueue(this); // this = context
+
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("driver", app.getUserid());
+        params.put("package", app.getPackage_id());
+        params.put("path", location);
+
+
+        String url = Urls.location_path;
+        Log.e("Location--url", url);
+        Log.e("param", params.toString());
+
+        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(params),
+
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // response
+                        Log.e("Location--updated", response.toString());
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // error
+                        Log.e("Error.Response", error.toString());
+                    }
+                }
+        ) {
+
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                String auth = "Bearer " + app.getAuttoken();
+                headers.put("Authorization", auth);
+                return headers;
+            }
+
+
+        };
+
         queue.add(putRequest);
 
 
@@ -906,19 +957,19 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 //        if (asigned = false) {
 
 
-            handler.postDelayed(runnable = new Runnable() {
-                public void run() {
-                    //do something
+        handler.postDelayed(runnable = new Runnable() {
+            public void run() {
+                //do something
 
-                    Log.e("checking", "............................");
+                Log.e("checking", "............................");
 
 
-                    checkAssigned();
+                checkAssigned();
 //                    Post_Device_fcm(token);
 
-                    handler.postDelayed(runnable, delay);
-                }
-            }, delay);
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
 
 //
 //        } else {
@@ -991,6 +1042,15 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 Log.e("update", "updating loc-........");
 
                 updatePostLocation(location.getLatitude() + "," + location.getLongitude());
+
+
+                if (app.getPackage_id() != null) {
+
+                    PostLocationpath(location.getLatitude() + "," + location.getLongitude());
+                }else{
+                    Log.e("Null", "package not available");
+
+                }
 
 
             }
@@ -1381,7 +1441,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 //                                        // Will display the notification in the notification bar
 //                                        notificationManager.notify(1, builder.build());
 
-                                        if(bottomSheetDialog != null && bottomSheetDialog.isShowing()) {
+                                        if (bottomSheetDialog != null && bottomSheetDialog.isShowing()) {
                                             return;
                                         }
 

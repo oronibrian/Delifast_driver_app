@@ -15,6 +15,9 @@ public class Urls {
     public static final String rejectrequest = Base2 + "rejectrequest";
     public static final String pickrequest = Base2 + "pickpackage";
 
+    public static final String returnrequest = Base2 + "return";
+
+
     public static final String onlineRequest = Base2 + "driveronlinelinerequest";
     public static final String offlineRequest = Base2 + "driverofflinerequest";
 
@@ -40,6 +43,10 @@ public class Urls {
 
 
     public static final String finace = Base + "v1/finance/?rider=";
+
+    public static final String location_path = Base2 + "api/v1/location_path";
+
+
 
 
 

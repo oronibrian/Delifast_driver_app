@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,7 +42,7 @@ public class My_Deliveries extends AppCompatActivity {
     DriverApplication app;
     Boolean asigned = false;
 
-    TextView txt_rider_amount;
+    TextView txt_rider_amount, txt_empty;
     int total_sum = 0;
 
     @Override
@@ -57,6 +58,7 @@ public class My_Deliveries extends AppCompatActivity {
 //        rvVideos.setNestedScrollingEnabled(true);
         app = (DriverApplication) getApplicationContext();
         txt_rider_amount = findViewById(R.id.txt_rider_amount);
+        txt_empty = findViewById(R.id.txt_empty);
 
 
     }
@@ -183,11 +185,10 @@ public class My_Deliveries extends AppCompatActivity {
 
                                 String total_rider_amount = obj.getString("balance");
 
-                                total_sum = total_sum + Integer.parseInt(total_rider_amount);
-
+//                                total_sum = total_sum + Integer.parseInt(total_rider_amount);
 
                             }
-                            txt_rider_amount.setText(""+total_sum);
+//                            txt_rider_amount.setText("" + total_sum);
 
 
                         } catch (JSONException e) {
@@ -268,7 +269,7 @@ public class My_Deliveries extends AppCompatActivity {
                             JSONArray jsonArray;
                             try {
                                 jsonArray = new JSONArray(response);
-                                Log.e("lis", jsonArray.toString(4));
+                                Log.e("listdata", jsonArray.toString(4));
 
 
                                 if (jsonArray.length() > 0) {
@@ -276,6 +277,9 @@ public class My_Deliveries extends AppCompatActivity {
                                     passModuleData(jsonArray);
 
 
+                                } else {
+                                    txt_empty.setVisibility(View.VISIBLE);
+                                    rvVideos.setVisibility(View.GONE);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -329,13 +333,14 @@ public class My_Deliveries extends AppCompatActivity {
 
             videoModelArrayList.add(videoModel);
 
-            if(jsonObject.optString("status").equalsIgnoreCase("delivered")) {
+
+            if (jsonObject.optString("status").equals("delivered")) {
+
                 total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount"));
             }
 
-
-
         }
+        txt_rider_amount.setText("" + total_sum);
 
 
 //        if (videoModelArrayList.size() > 0) {

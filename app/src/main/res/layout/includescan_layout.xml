@@ -46,6 +46,16 @@
                 android:textSize="@dimen/_20sdp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                 android:textColor="@color/black" />
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/img_done"
+                android:layout_width="@dimen/_50sdp"
+                android:layout_height="@dimen/_50sdp"
+                android:src="@drawable/ic_done"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:textColor="@color/black" />
         </LinearLayout>
 
         <LinearLayout
