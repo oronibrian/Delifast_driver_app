@@ -319,6 +319,8 @@
                             android:orientation="vertical">
 
                             <androidx.cardview.widget.CardView
+                                android:id="@+id/tvscan"
+
                                 android:layout_width="@dimen/_120sdp"
                                 android:layout_height="match_parent"
                                 app:cardCornerRadius="12dp"
@@ -341,7 +343,6 @@
                                         app:tint="@color/colorPrimaryDark" />
 
                                     <TextView
-                                        android:id="@+id/tvscan"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:background="?selectableItemBackgroundBorderless"

@@ -136,7 +136,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
     ArrayList<LatLng> markerPoints;
     String to, from = "";
     TextView source_location, destination_location, tvmenu, textView_details;
-    TextView txtFare, txtcustomer_name, tvscan;
+    TextView txtFare, txtcustomer_name;
+    CardView tvscan;
     ImageView btncall;
     String pacakge;
     DriverApplication app;
@@ -320,21 +321,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 startActivity(mapIntent);
 
 
-//                Uri.Builder builder = new Uri.Builder();
-//                builder.scheme("https")
-//                        .authority("www.google.com")
-//                        .appendPath("maps")
-//                        .appendPath("dir")
-//                        .appendPath("")
-//                        .appendQueryParameter("api", "1")
-//                        .appendQueryParameter("destination", app.getDestination().latitude + "," + app.getDestination().longitude);
-//                String url = builder.build().toString();
-//                Log.d("Directions", url);
-//                Intent i = new Intent(Intent.ACTION_VIEW);
-//                i.setData(Uri.parse(url));
-//                startActivity(i);
-
-
             }
         });
 
@@ -350,24 +336,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     try {
-//                        boolean save = new QRGSaver().save(savePath, "qr", bitmap, QRGContents.ImageType.IMAGE_JPEG);
-//                        String result = save ? "Image Saved" : "Image Not Saved";
                         saveToInternalSorage(bitmap, txtcustomer_name.getText().toString());
                         saveToInternalSorageBarcode(bitmap2);
 //                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
 
 
                         startActivity(new Intent(getApplicationContext(), ScanBarcodeActivity.class));
-
-
-//                        if (reprint) {
-//                            PickPackage(app.getPackage_id(), app.getUserid());
-//                        } else {
-////                            PickPackage(app.getPackage_id(), app.getUserid());
-//
-//                            Toast.makeText(MainActivity.this, "Re-printing", Toast.LENGTH_SHORT).show();
-//
-//                        }
 
 
                     } catch (Exception e) {

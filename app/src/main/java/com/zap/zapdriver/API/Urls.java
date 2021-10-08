@@ -27,6 +27,7 @@ public class Urls {
 
     public static final String is_driverassigned = Base2 + "api/v1/is_assined?id=";
 
+    public static final String search_by_qr = Base2 + "api/v1/mypackages/?package_qr_code=";
 
     public static final String Token = Base2 + "api/token/";
     public static final String FCM_URL = Base2 + "api/devices/";

@@ -11,8 +11,8 @@
 
         <item
             android:id= "@+id/nav_my_delivery"
-            android:icon= "@drawable/menu"
-            android:title= "Account" />
+            android:icon= "@drawable/ic_baseline_money_24"
+            android:title= "Finance &amp; Account" />
 
 
     </group>

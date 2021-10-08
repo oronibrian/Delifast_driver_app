@@ -4,11 +4,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -30,7 +32,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,9 +50,10 @@ public class My_Deliveries extends AppCompatActivity {
     DriverApplication app;
     Boolean asigned = false;
 
-    TextView txt_rider_amount, txt_empty;
+    TextView txt_rider_amount, txt_empty, txt_week,txt_phone_number;
     int total_sum = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +68,24 @@ public class My_Deliveries extends AppCompatActivity {
         app = (DriverApplication) getApplicationContext();
         txt_rider_amount = findViewById(R.id.txt_rider_amount);
         txt_empty = findViewById(R.id.txt_empty);
+        txt_week = findViewById(R.id.txt_week);
+        txt_phone_number=findViewById(R.id.txt_phone_number);
+
+
+//        Calendar cal = new GregorianCalendar();
+//        cal.add(Calendar.DAY_OF_MONTH, -7);
+//        Date sevenDaysAgo = cal.getTime();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, -6);
+
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        LocalDateTime now = LocalDateTime.now();
+
+
+        txt_week.setText("Weekly Deliveries: ("+sdf.format(cal.getTime())+"-"+dtf.format(now)+")");
 
 
     }
@@ -78,6 +105,8 @@ public class My_Deliveries extends AppCompatActivity {
         String last_name = sharedPreferences.getString("last_name", "");
         String email = sharedPreferences.getString("email", "");
         String phone_no = sharedPreferences.getString("phone_no", "");
+
+        txt_phone_number.setText(phone_no);
 
         Log.e("IsASSIGNED", asigned.toString());
         app.setUsername(email);
@@ -334,7 +363,7 @@ public class My_Deliveries extends AppCompatActivity {
             videoModelArrayList.add(videoModel);
 
 
-            if (jsonObject.optString("status").equals("delivered")) {
+            if (jsonObject.optString("status").equals("delivered") || jsonObject.optString("status").equals("returned")) {
 
                 total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount"));
             }
