@@ -1,9 +1,14 @@
 package com.zap.zapdriver;
 
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +24,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -360,7 +366,7 @@ public class SignatureActivity extends AppCompatActivity {
                                     String receiver_phone = obj.getString("receiver_phone");
 
 
-                                   String phn = obj.getString("sender_phone");
+                                    String phn = obj.getString("sender_phone");
 
 
                                     number = "+254" + phn.substring(1);
@@ -497,6 +503,7 @@ public class SignatureActivity extends AppCompatActivity {
 
                             Log.e("Response", response);
                             Toast.makeText(SignatureActivity.this, "" + paid, Toast.LENGTH_SHORT).show();
+                            sendNotification("Amount");
 
                             if (paid.equals("Success")) {
                                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
@@ -524,4 +531,30 @@ public class SignatureActivity extends AppCompatActivity {
     }
 
 
+    private void sendNotification(String amount) {
+        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainActivity.class);
+        stackBuilder.addNextIntent(notificationIntent);
+        PendingIntent notificationPendingIntent = stackBuilder.getPendingIntent(Integer.parseInt("0"), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
+        bigText.bigText("Amount Credited");
+        bigText.setBigContentTitle("Amount Credited");
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.zap)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.zap))
+                .setColor(getResources().getColor(R.color.black))
+                .setContentTitle(("Amount"))
+                .setContentIntent(notificationPendingIntent)
+                .setContentText("Account: credited ")
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setStyle(bigText);
+
+        builder.setAutoCancel(true);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, builder.build());
+    }
 }

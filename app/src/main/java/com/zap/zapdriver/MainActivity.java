@@ -20,6 +20,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Camera;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -336,12 +337,17 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     try {
-                        saveToInternalSorage(bitmap, txtcustomer_name.getText().toString());
-                        saveToInternalSorageBarcode(bitmap2);
+//                        saveToInternalSorage(bitmap, txtcustomer_name.getText().toString());
+//                        saveToInternalSorageBarcode(bitmap2);
 //                        Toast.makeText(MainActivity.this, "generated", Toast.LENGTH_LONG).show();
 
 
-                        startActivity(new Intent(getApplicationContext(), ScanBarcodeActivity.class));
+                        int numCameras = Camera.getNumberOfCameras();
+                        if (numCameras > 0) {
+                            startActivity(new Intent(getApplicationContext(), ScanBarcodeActivity.class));
+                        } else {
+                            Toast.makeText(getApplicationContext(), "No camera available", Toast.LENGTH_SHORT).show();
+                        }
 
 
                     } catch (Exception e) {
@@ -400,9 +406,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             public void onClick(View v) {
 
                 if (app.getIs_cooperate()) {
-                    startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-
                     Toast.makeText(getApplicationContext(), "Cooperate package", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                    finish();
+
                 } else {
                     checkPaid();
 
@@ -445,9 +452,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             if (paid.equalsIgnoreCase("True")) {
 
                                 startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                                finish();
                             } else {
                                 Toast.makeText(MainActivity.this, "No payment found", Toast.LENGTH_SHORT).show();
-
 
                                 stkPush();
                             }
@@ -569,6 +576,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     stkPushMethod(value);
                 }
 
+                paybillalertDialog.dismiss();
+
             }
         });
 
@@ -667,6 +676,9 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
+        ProgressDialog dialog = ProgressDialog.show(MainActivity.this, "",
+                "Processing. Please wait...", true);
+
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("payment_phone", payment_phone);
@@ -676,35 +688,31 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         Log.e("payment_phone--url", url);
         Log.e("--param", payment_phone);
 
-        JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+        StringRequest putRequest = new StringRequest(Request.Method.GET, url,
 
-                new Response.Listener<JSONObject>() {
+                new Response.Listener<String>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String response) {
                         // response
                         Log.e("mpesa", response.toString());
 
-
-                        try {
-                            JSONObject data = response;
+                        dialog.dismiss();
 
 
-                            if (data.getString("ResultDesc").contains("successfully")) {
+//                        try {
+//                            JSONObject data = response;
 
-                                Toast.makeText(MainActivity.this, "Received for processing", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-
-
-                            } else {
-                                Toast.makeText(getApplicationContext(), "" + data.getString("ResultDesc"), Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-
-                        }
+                        Toast.makeText(MainActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(), MpesaProcessingActivity.class));
 
 
-                        paybillalertDialog.dismiss();
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//
+//                        }
+
+
+//                        paybillalertDialog.dismiss();
 
                     }
                 },
@@ -712,29 +720,17 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         // error
-                        Log.e("Error.Response", error.toString());
-                        paybillalertDialog.dismiss();
+                        Log.e("Error", error.toString());
+                        Toast.makeText(MainActivity.this, error.toString().toString(), Toast.LENGTH_SHORT).show();
+
+                        dialog.dismiss();
 
                     }
                 }
-        ) {
-
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-
-                String auth = "Bearer " + app.getAuttoken();
-                headers.put("Authorization", auth);
-                return headers;
-            }
-
-
-        };
-
+        );
+//
         putRequest.setRetryPolicy(new DefaultRetryPolicy(
-                5000,
+                10000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         queue.add(putRequest);
@@ -1021,7 +1017,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 if (app.getPackage_id() != null) {
 
                     PostLocationpath(location.getLatitude() + "," + location.getLongitude());
-                }else{
+                } else {
                     Log.e("Null", "package not available");
 
                 }

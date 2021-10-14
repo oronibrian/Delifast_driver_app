@@ -48,9 +48,5 @@ public class Urls {
     public static final String location_path = Base2 + "api/v1/location_path";
 
 
-
-
-
-
-    
+    public static String mpesacallback = "https://zaplogistics.co.ke/c2b/callback";
 }

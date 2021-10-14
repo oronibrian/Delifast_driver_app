@@ -27,6 +27,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:name=".MpesaProcessingActivity"
+            android:exported="false" />
+        <activity
             android:name=".ScanBarcodeActivity"
             android:exported="true" />
         <activity
