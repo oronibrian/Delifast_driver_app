@@ -37,8 +37,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +48,7 @@ public class My_Deliveries extends AppCompatActivity {
     DriverApplication app;
     Boolean asigned = false;
 
-    TextView txt_rider_amount, txt_empty, txt_week,txt_phone_number;
+    TextView txt_rider_amount, txt_empty, txt_week, txt_phone_number;
     int total_sum = 0;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -69,7 +67,7 @@ public class My_Deliveries extends AppCompatActivity {
         txt_rider_amount = findViewById(R.id.txt_rider_amount);
         txt_empty = findViewById(R.id.txt_empty);
         txt_week = findViewById(R.id.txt_week);
-        txt_phone_number=findViewById(R.id.txt_phone_number);
+        txt_phone_number = findViewById(R.id.txt_phone_number);
 
 
 //        Calendar cal = new GregorianCalendar();
@@ -85,7 +83,7 @@ public class My_Deliveries extends AppCompatActivity {
         LocalDateTime now = LocalDateTime.now();
 
 
-        txt_week.setText("Weekly Deliveries: ("+sdf.format(cal.getTime())+"-"+dtf.format(now)+")");
+        txt_week.setText("Weekly Deliveries: (" + sdf.format(cal.getTime()) + "-" + dtf.format(now) + ")");
 
 
     }
@@ -365,7 +363,15 @@ public class My_Deliveries extends AppCompatActivity {
 
             if (jsonObject.optString("status").equals("delivered") || jsonObject.optString("status").equals("returned")) {
 
-                total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount"));
+                if (jsonObject.optString("mpesa_payment_method").equals("False")) {
+                    total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount")
+                            + Integer.parseInt(jsonObject.optString("zap_comission")
+                            + Integer.parseInt(jsonObject.optString("vat_amount"))));
+
+                } else {
+
+                    total_sum = total_sum + Integer.parseInt(jsonObject.optString("rider_amount"));
+                }
             }
 
         }

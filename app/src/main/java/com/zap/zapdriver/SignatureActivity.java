@@ -57,6 +57,8 @@ public class SignatureActivity extends AppCompatActivity {
     AlertDialog mpesaalertDialog, paybillalertDialog;
     CardView card_details;
     String number = "";
+    String cash_payment = "";
+    String email, pass,user;
 
 
     @Override
@@ -79,17 +81,19 @@ public class SignatureActivity extends AppCompatActivity {
         card_details.setVisibility(View.VISIBLE);
         mSaveButton.setVisibility(View.VISIBLE);
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
-        String user = sharedPreferences.getString("username", "");
+         user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
 
 
-        String pass = sharedPreferences.getString("password", "");
+        pass = sharedPreferences.getString("password", "");
 
         String name = sharedPreferences.getString("name", "");
 
         String last_name = sharedPreferences.getString("last_name", "");
-        String email = sharedPreferences.getString("email", "");
+        email = sharedPreferences.getString("email", "");
         String phone_no = sharedPreferences.getString("phone_no", "");
+
+        cash_payment = getIntent().getStringExtra("cash_payment");
 
 
         if (user.equals("")) {
@@ -438,13 +442,13 @@ public class SignatureActivity extends AppCompatActivity {
 
     public void generateCode(String phone) {
 
-        Log.e("phone", phone.toString());
 
         HashMap<String, String> params = new HashMap<String, String>();
         params.put("phones", phone);
         params.put("is_confirmed", "false");
         params.put("package", app.getPackage_id());
 
+        Log.e("generate", params.toString());
 
         JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, Urls.generate_receiver_code, new JSONObject(params),
 
@@ -460,8 +464,10 @@ public class SignatureActivity extends AppCompatActivity {
                     // error
                     Log.e("Error.Response", error.toString());
 
-
                     Toast.makeText(SignatureActivity.this, "" + error.toString(), Toast.LENGTH_SHORT).show();
+
+                    Request_token(user, pass);
+
 
                 }
         ) {
@@ -487,7 +493,7 @@ public class SignatureActivity extends AppCompatActivity {
     public void update_package_Complete(String package_id, String rider_id, String recevere_phone_id, String name) {
         RequestQueue queue = Volley.newRequestQueue(this); // this = context
 
-        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id + "/" + name;
+        String url = Urls.complete_delivery_request + "/" + package_id + "/" + rider_id + "/" + recevere_phone_id + "/" + name + "/" + cash_payment;
         Log.e("URL", url);
 
         StringRequest postRequest = new StringRequest(Request.Method.GET, url,

@@ -11,14 +11,14 @@
         android:layout_centerInParent="true"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingTop="@dimen/_2sdp">
+        android:paddingTop="@dimen/_20sdp">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_2sdp"
             android:visibility="visible"
-            app:cardCornerRadius="6dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="6dp">
 
             <com.simmorsal.library.ConcealerNestedScrollView
@@ -41,7 +41,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_horizontal"
+                        android:layout_margin="@dimen/_13sdp"
+                        android:gravity="start"
                         android:orientation="vertical"
                         android:padding="@dimen/spacing_large">
 
@@ -49,7 +50,7 @@
                             android:id="@+id/checkBox"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Online method"
+                            android:text="Mpesa Online method"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -57,7 +58,15 @@
                             android:id="@+id/checkBox2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Offline method"
+                            android:text="Mpesa Offline method"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+
+                        <CheckBox
+                            android:id="@+id/checkBox3"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cash Payment"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/checkBox" />
                     </LinearLayout>
@@ -127,19 +136,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
                                 android:drawableLeft="@drawable/ic_check_circle"
                                 android:drawableTint="@color/green_A200"
-                                android:text="Lipa na M-PESA" />
+                                android:text="Lipa na M-PESA"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1" />
 
                             <TextView
                                 android:id="@+id/checkBox1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
                                 android:drawableLeft="@drawable/ic_check_circle"
                                 android:drawableTint="@color/green_A200"
-                                android:text="Pay bill No:869032" />
+                                android:text="Pay bill No:869032"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1" />
 
 
                             <TextView
@@ -157,10 +166,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
                                 android:drawableLeft="@drawable/ic_check_circle"
                                 android:drawableTint="@color/green_A200"
-                                android:text="Confirm" />
+                                android:text="Confirm"
+                                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1" />
 
                         </LinearLayout>
 

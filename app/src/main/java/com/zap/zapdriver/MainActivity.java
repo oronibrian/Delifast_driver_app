@@ -187,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
     Boolean asigned = false;
     Boolean offline_payment = false;
+    Boolean cash_payment = false;
 
     int amout_cost = 0;
     private BottomSheetDialog bottomSheetDialog;
@@ -455,7 +456,6 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                 finish();
                             } else {
                                 Toast.makeText(MainActivity.this, "No payment found", Toast.LENGTH_SHORT).show();
-
                                 stkPush();
                             }
 
@@ -517,6 +517,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         CheckBox online = dialogView.findViewById(R.id.checkBox);
         CheckBox offline = dialogView.findViewById(R.id.checkBox2);
 
+        CheckBox cash = dialogView.findViewById(R.id.checkBox3);
+
         EditText stk_number = dialogView.findViewById(R.id.stk_mpesanumber);
         LinearLayout ll_offlibe = dialogView.findViewById(R.id.ll_offlibe);
         LinearLayout ll_online = dialogView.findViewById(R.id.ll_online);
@@ -524,6 +526,27 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         TextView txt_offline = dialogView.findViewById(R.id.txt_offline);
 
         txt_offline.setText("KES: " + amout_cost);
+
+
+        cash.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (buttonView.isChecked()) {
+                    ll_offlibe.setVisibility(View.GONE);
+                    ll_online.setVisibility(View.GONE);
+                    offline.setChecked(false);
+                    offline.setSelected(false);
+
+
+                    online.setChecked(false);
+                    online.setSelected(false);
+                    offline_payment = true;
+                    cash_payment = true;
+                }
+
+            }
+
+        });
 
 
         online.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -535,6 +558,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     offline.setChecked(false);
                     offline.setSelected(false);
                     offline_payment = false;
+                    cash_payment = false;
+
+
+                    cash.setChecked(false);
+                    cash.setSelected(false);
                 }
 
             }
@@ -552,6 +580,11 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     online.setChecked(false);
                     online.setSelected(false);
                     offline_payment = true;
+                    cash_payment = false;
+
+
+                    cash.setChecked(false);
+                    cash.setSelected(false);
                 }
 
             }
@@ -567,8 +600,20 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
                 if (offline_payment) {
-                    startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-                    finish();
+
+                    Intent i = new Intent(MainActivity.this, SignatureActivity.class);
+                    i.putExtra("cash_payment", "mpesa");
+                    startActivity(i);
+//                    finish();
+
+                } else if (cash_payment) {
+
+                    Intent i = new Intent(MainActivity.this, SignatureActivity.class);
+
+                    i.putExtra("cash_payment", cash_payment);
+                    startActivity(i);
+
+//                    finish();
 
                 } else {
                     String value = "254" + stk_number.getText().toString().substring(1);
