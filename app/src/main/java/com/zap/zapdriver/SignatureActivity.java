@@ -58,7 +58,7 @@ public class SignatureActivity extends AppCompatActivity {
     CardView card_details;
     String number = "";
     String cash_payment = "";
-    String email, pass,user;
+    String email, pass, user;
 
 
     @Override
@@ -81,7 +81,7 @@ public class SignatureActivity extends AppCompatActivity {
         card_details.setVisibility(View.VISIBLE);
         mSaveButton.setVisibility(View.VISIBLE);
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
-         user = sharedPreferences.getString("username", "");
+        user = sharedPreferences.getString("username", "");
         String id = sharedPreferences.getString("id", "");
 
 
@@ -94,6 +94,14 @@ public class SignatureActivity extends AppCompatActivity {
         String phone_no = sharedPreferences.getString("phone_no", "");
 
         cash_payment = getIntent().getStringExtra("cash_payment");
+
+        if (cash_payment.equals("")) {
+            Log.e("method: ","empty method");
+
+        } else {
+            Toast.makeText(SignatureActivity.this, cash_payment, Toast.LENGTH_SHORT).show();
+
+        }
 
 
         if (user.equals("")) {

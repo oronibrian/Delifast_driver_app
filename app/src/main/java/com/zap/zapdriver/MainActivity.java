@@ -316,8 +316,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 //                startActivity(new Intent(getApplicationContext(), TurnNavigation2.class));
 
+                Log.e("source: ", String.valueOf(source_location.getText().toString()));
+                Log.e("dest: ", String.valueOf(destination_location.getText().toString()));
 
-                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + source_location.getText().toString() + "o,+" + destination_location.getText().toString());
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destination_location.getText().toString() + "o,+" + source_location.getText().toString());
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             @Override
             public void onClick(View v) {
 
-                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                     try {
 //                        saveToInternalSorage(bitmap, txtcustomer_name.getText().toString());
 //                        saveToInternalSorageBarcode(bitmap2);
@@ -355,7 +357,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         e.printStackTrace();
                     }
                 } else {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, 0);
                 }
 
 
@@ -524,8 +526,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         LinearLayout ll_online = dialogView.findViewById(R.id.ll_online);
 
         TextView txt_offline = dialogView.findViewById(R.id.txt_offline);
+        TextView ttx_cassh = dialogView.findViewById(R.id.ttx_cassh);
 
-        txt_offline.setText("KES: " + amout_cost);
+
+        txt_offline.setText("Ksh: " + amout_cost + " (inclusive vat)");
+
+        ttx_cassh.setText("Ksh: " + amout_cost + " (inclusive vat)");
 
 
         cash.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -536,6 +542,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     ll_online.setVisibility(View.GONE);
                     offline.setChecked(false);
                     offline.setSelected(false);
+
+                    ttx_cassh.setVisibility(View.VISIBLE);
 
 
                     online.setChecked(false);
@@ -559,6 +567,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     offline.setSelected(false);
                     offline_payment = false;
                     cash_payment = false;
+                    ttx_cassh.setVisibility(View.GONE);
 
 
                     cash.setChecked(false);
@@ -582,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     offline_payment = true;
                     cash_payment = false;
 
+                    ttx_cassh.setVisibility(View.GONE);
 
                     cash.setChecked(false);
                     cash.setSelected(false);
@@ -602,18 +612,16 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 if (offline_payment) {
 
                     Intent i = new Intent(MainActivity.this, SignatureActivity.class);
-                    i.putExtra("cash_payment", "mpesa");
+                    if (cash_payment) {
+
+                        i.putExtra("cash_payment", "cash");
+
+                    } else {
+                        i.putExtra("cash_payment", "mpesa");
+
+                        //                    finish();
+                    }
                     startActivity(i);
-//                    finish();
-
-                } else if (cash_payment) {
-
-                    Intent i = new Intent(MainActivity.this, SignatureActivity.class);
-
-                    i.putExtra("cash_payment", cash_payment);
-                    startActivity(i);
-
-//                    finish();
 
                 } else {
                     String value = "254" + stk_number.getText().toString().substring(1);
@@ -1428,7 +1436,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                                     destination_location.setText(dropoff_name + ", kenya");
                                     source_location.setText(pickup_name + ", kenya");
                                     txtFare.setText("Ksh " + rider_amount);
-                                    txtcustomer_name.setText("Receiver phone: " + receiver_phone + "\nDist: " + distance + "km\nSender: " + sendername);
+                                    txtcustomer_name.setText("Receiver phn: " + receiver_phone + "\nDist: " + distance + "km\nSender: " + sendername + "\nKsh: " + rider_amount);
 
                                     pacakge = title;
 

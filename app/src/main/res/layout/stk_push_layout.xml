@@ -69,6 +69,19 @@
                             android:text="Cash Payment"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+
+
+                        <TextView
+                            android:id="@+id/ttx_cassh"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:drawableLeft="@drawable/ic_check_circle"
+                            android:drawableTint="@color/green_A200"
+                            android:gravity="center_vertical"
+                            android:text="Amount: 300"
+                            android:visibility="gone"
+                            android:textSize="@dimen/_12sdp"
+                            android:textStyle="normal" />
                     </LinearLayout>
 
 
