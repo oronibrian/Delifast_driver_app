@@ -22,6 +22,7 @@ public class DriverApplication extends Application {
     Boolean is_cooperate;
 
     String firstName,last_name,email,phone_no;
+    String payment_method;
 
 
     @Override
@@ -153,6 +154,14 @@ public class DriverApplication extends Application {
 
     public void setPhone_no(String phone_no) {
         this.phone_no = phone_no;
+    }
+
+    public String getPayment_method() {
+        return payment_method;
+    }
+
+    public void setPayment_method(String payment_method) {
+        this.payment_method = payment_method;
     }
 }
 

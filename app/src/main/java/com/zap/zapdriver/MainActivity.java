@@ -294,6 +294,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
         if (user.equals("")) {
             startActivity(new Intent(this, LoginActivity.class));
+            SharedPreferences settings = this.getSharedPreferences("PREFS_NAME", Context.MODE_PRIVATE);
+            settings.edit().clear().commit();
             finish();
 
         } else {
@@ -411,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 if (app.getIs_cooperate()) {
                     Toast.makeText(getApplicationContext(), "Cooperate package", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-                    finish();
+//                    finish();
 
                 } else {
                     checkPaid();
@@ -455,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                             if (paid.equalsIgnoreCase("True")) {
 
                                 startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
-                                finish();
+//                                finish();
                             } else {
                                 Toast.makeText(MainActivity.this, "No payment found", Toast.LENGTH_SHORT).show();
                                 stkPush();
@@ -615,13 +617,17 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                     if (cash_payment) {
 
                         i.putExtra("cash_payment", "cash");
+                        app.setPayment_method("cash");
 
                     } else {
                         i.putExtra("cash_payment", "mpesa");
+                        app.setPayment_method("mpesa");
 
-                        //                    finish();
                     }
                     startActivity(i);
+
+                    finish();
+
 
                 } else {
                     String value = "254" + stk_number.getText().toString().substring(1);

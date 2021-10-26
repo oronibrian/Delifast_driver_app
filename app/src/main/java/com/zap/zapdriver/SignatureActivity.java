@@ -57,7 +57,7 @@ public class SignatureActivity extends AppCompatActivity {
     AlertDialog mpesaalertDialog, paybillalertDialog;
     CardView card_details;
     String number = "";
-    String cash_payment = "";
+    String cash_payment = "mpesa";
     String email, pass, user;
 
 
@@ -93,14 +93,18 @@ public class SignatureActivity extends AppCompatActivity {
         email = sharedPreferences.getString("email", "");
         String phone_no = sharedPreferences.getString("phone_no", "");
 
-        cash_payment = getIntent().getStringExtra("cash_payment");
 
-        if (cash_payment.equals("")) {
-            Log.e("method: ","empty method");
 
-        } else {
-            Toast.makeText(SignatureActivity.this, cash_payment, Toast.LENGTH_SHORT).show();
+        if( getIntent().hasExtra("cash_payment")) {
+            cash_payment = getIntent().getStringExtra("cash_payment");
 
+            if (cash_payment.equals("")) {
+                Log.e("method: ", "empty method");
+
+            } else {
+                Toast.makeText(SignatureActivity.this, cash_payment, Toast.LENGTH_SHORT).show();
+
+            }
         }
 
 

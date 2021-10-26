@@ -1,5 +1,6 @@
 package com.zap.zapdriver;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,8 +29,7 @@ public class MpesaProcessingActivity extends AppCompatActivity {
 
     DriverApplication app;
 
-    ProgressBar mProgress;
-
+    ProgressDialog progressDialog ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -38,8 +38,16 @@ public class MpesaProcessingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mpesa_processing);
 
         app = (DriverApplication) getApplicationContext();
-        mProgress = (ProgressBar) findViewById(R.id.circularProgressbar);
-        mProgress.setVisibility(View.VISIBLE);
+
+        progressDialog = new ProgressDialog(this);
+
+
+
+        progressDialog.setMessage("Please wait..."); // Setting Message
+        progressDialog.setTitle("Confirming Payment"); // Setting Title
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER); // Progress Dialog Style Spinner
+        progressDialog.show(); // Display Progress Dialog
+        progressDialog.setCancelable(false);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -49,7 +57,7 @@ public class MpesaProcessingActivity extends AppCompatActivity {
                 handler.removeCallbacksAndMessages(null);
 
             }
-        }, 10000);
+        }, 20000);
 
 
     }
@@ -68,7 +76,7 @@ public class MpesaProcessingActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         // response
-                        Log.e("mpesa", response.toString());
+                        Log.e("mpesa", response);
 
 
 //                        try {
@@ -108,7 +116,8 @@ public class MpesaProcessingActivity extends AppCompatActivity {
 
     private void checkPaid() {
 
-        Timber.e(Urls.checkPaid + "" + app.getPackage_id().toString());
+        Timber.e(Urls.checkPaid + "" + app.getPackage_id());
+        Log.e("mpesa_check", Urls.checkPaid + "" + app.getPackage_id());
 
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, Urls.checkPaid + "" + app.getPackage_id(),
@@ -117,33 +126,43 @@ public class MpesaProcessingActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
 
-                        Log.i("response", response.toString());
-                        mProgress.setVisibility(View.GONE);
+                        Log.e("mp", response);
 
 
                         try {
 
-                            Log.i("response", response.toString());
+                            Log.e("mp", response);
 
                             JSONObject jsonArray = new JSONObject(response);
 
                             String paid = jsonArray.getString("msg");
+                            Log.e("paid", paid);
 
-                            if (paid.equalsIgnoreCase("True")) {
+                            if(paid.equalsIgnoreCase("True")) {
 
-                                startActivity(new Intent(getApplicationContext(), SignatureActivity.class));
+                                Intent i = new Intent(getApplicationContext(), SignatureActivity.class);
+                                i.putExtra("cash_payment", "mpesa");
+                                app.setPayment_method("mpesa");
+                                startActivity(i);
                                 finish();
+
+
                             } else {
                                 Toast.makeText(getApplicationContext(), "Payment has not been received", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                                 finish();
 
+
+
                             }
+                            progressDialog.dismiss();
 
 
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Log.e("error", e.toString());
+                            Log.e("mperror", e.toString());
+                            progressDialog.dismiss();
+
 
 
                         }
