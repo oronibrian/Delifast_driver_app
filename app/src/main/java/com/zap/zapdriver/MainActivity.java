@@ -321,7 +321,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 Log.e("source: ", String.valueOf(source_location.getText().toString()));
                 Log.e("dest: ", String.valueOf(destination_location.getText().toString()));
 
-                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destination_location.getText().toString() + "o,+" + source_location.getText().toString());
+
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + destination_location.getText().toString().replace(',', '+') + ",");
+
+
+                Log.e("gmmIntentUri: ", String.valueOf(gmmIntentUri.toString()));
+
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);
