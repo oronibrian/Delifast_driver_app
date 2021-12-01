@@ -32,6 +32,10 @@ public class Urls {
     public static final String Token = Base2 + "api/token/";
     public static final String FCM_URL = Base2 + "api/devices/";
 
+    public static final String register = Base2 + "api/users/";
+
+
+
     public static final String complete_delivery_request = Base2 + "deliverPackage";
 
     public static final String driverassignedpackages = Base2 + "api/v1/driverassignedpackages/?driver_assigned=";

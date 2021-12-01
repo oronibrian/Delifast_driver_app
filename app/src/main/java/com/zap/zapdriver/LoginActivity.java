@@ -5,12 +5,14 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,7 +37,7 @@ public class LoginActivity extends AppCompatActivity {
 
     ProgressDialog progressDoalog;
     EditText edittextusername, editextpassword;
-
+    TextView txt_join_us;
     String ACCESS_TOKEN;
 
     DriverApplication app;
@@ -64,6 +66,8 @@ public class LoginActivity extends AppCompatActivity {
 
         edittextusername = findViewById(R.id.edittextusername);
 
+        txt_join_us = findViewById(R.id.txt_join_us);
+
         btnlogn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +76,33 @@ public class LoginActivity extends AppCompatActivity {
 
             }
 
+        });
+
+
+        txt_join_us.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, JoinActivity.class);
+                startActivity(intent);
+                finish();
+
+            }
+
+        });
+
+
+        TextView imageLogo = findViewById(R.id.forgotPassword);
+        imageLogo.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                String url = "https://zaplogistics.co.ke/accounts/password_reset/";
+
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
+            }
         });
     }
 

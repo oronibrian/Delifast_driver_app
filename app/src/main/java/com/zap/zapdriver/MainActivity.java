@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
             app.setPassword(pass);
             app.setPhone_no(phone_no);
 
-//            Request_token(user, pass);
+            Request_token(user, pass);
 
             Log.e("email: ", String.valueOf(email));
 
@@ -704,6 +704,12 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                 error -> {
                     // error
                     Log.d("Error.Response", error.toString());
+                    Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
+
+                    SharedPreferences preferences = getSharedPreferences("PREFS_NAME",
+                            Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.clear().apply();
 
                     startActivity(new Intent(this, LoginActivity.class));
                     finish();
@@ -980,7 +986,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         app.setPassword(pass);
         app.setPhone_no(phone_no);
 
-        Request_token(user, pass);
+//        Request_token(user, pass);
 
         getCurrentLocation();
         if (locationUtilObj != null /*&& !locationUtilObj.isGoogleAPIConnected()*/) {
@@ -1552,7 +1558,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
                         Log.e("Error", "Error: " + error
                                 + "\nCause " + error.getCause()
                                 + "\nmessage" + error.getMessage());
-//                        Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_SHORT).show();
 
                     }
                 }

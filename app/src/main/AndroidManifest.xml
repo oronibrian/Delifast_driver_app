@@ -27,13 +27,16 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
+            android:name=".RiderRegSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".JoinActivity"
+            android:exported="false" />
+        <activity
             android:name=".MpesaProcessingActivity"
             android:exported="false" />
         <activity
             android:name=".ScanBarcodeActivity"
-            android:exported="true" />
-        <activity
-            android:name=".ScanCodeActivity"
             android:exported="true" />
         <activity
             android:name=".TurnNavigation3"
@@ -64,7 +67,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
+            android:value="AIzaSyD5xkBv6nRmusppkp5r2e6-PNnrBXT30Pg" />
 
         <activity android:name=".MainActivity">
             <intent-filter>

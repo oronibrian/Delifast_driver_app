@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 30
@@ -52,6 +53,7 @@ dependencies {
     implementation 'com.github.angads25:toggle:1.1.0'
     implementation 'com.yarolegovich:lovely-dialog:1.1.1'
     implementation 'com.github.jakebonk:NotifyMe:1.0.1'
+    implementation 'com.github.GrenderG:Toasty:1.5.0'
 
 
     //firebase
