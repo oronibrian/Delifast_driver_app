@@ -96,7 +96,6 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 String url = "https://zaplogistics.co.ke/accounts/password_reset/";
 
                 Intent i = new Intent(Intent.ACTION_VIEW);

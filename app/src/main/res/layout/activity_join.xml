@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".JoinActivity">
 
 
@@ -11,18 +12,20 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorPrimaryDark"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_exit_arrow_left"
         app:title="Rider Registration"
         app:titleTextColor="@color/white" />
 
+
     <View
         android:id="@+id/topView"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="80dp"
         android:background="@color/colorPrimary"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,7 +33,7 @@
 
     <View
         android:id="@+id/view5"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@drawable/wave"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,25 +41,50 @@
         app:layout_constraintTop_toBottomOf="@+id/topView" />
 
 
-
-    <TextView
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="100dp"
-        android:text="Earn extra cash"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:visibility="visible"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/topView"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/reg_firstname_et"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:background="@drawable/round_border"
+            android:drawablePadding="16dp"
+            android:ems="8"
+            android:hint="First Name"
+            android:inputType="text"
+            android:padding="16dp"
+            app:layout_constraintEnd_toStartOf="@+id/reg_last_name"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view5" />
+
+        <View
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="0dp" />
+
+        <EditText
+            android:id="@+id/reg_last_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/round_border"
+            android:drawablePadding="16dp"
+            android:ems="10"
+            android:hint="Last Name"
+            android:inputType="text"
+            android:padding="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view5" />
+    </LinearLayout>
 
 
     <EditText
         android:id="@+id/reg_name_et"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="24dp"
@@ -64,7 +92,7 @@
         android:background="@drawable/round_border"
         android:drawablePadding="16dp"
         android:ems="10"
-        android:hint="Email"
+        android:hint="@string/email"
         android:inputType="textEmailAddress"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -73,77 +101,8 @@
         app:layout_constraintTop_toBottomOf="@+id/reg_firstname_et" />
 
     <EditText
-        android:id="@+id/reg_pass_confirm"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="292dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/round_border"
-        android:drawablePadding="16dp"
-        android:ems="10"
-        android:hint="Confirm Password"
-        android:inputType="textPassword"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view5" />
-
-    <EditText
-        android:id="@+id/reg_firstname_et"
-        android:layout_width="160dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:background="@drawable/round_border"
-        android:drawablePadding="16dp"
-        android:ems="10"
-        android:hint="First Name"
-        android:inputType="text"
-        android:padding="16dp"
-        app:layout_constraintEnd_toStartOf="@+id/reg_last_name"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view5" />
-
-    <EditText
-        android:id="@+id/reg_last_name"
-        android:layout_width="160dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/round_border"
-        android:drawablePadding="16dp"
-        android:ems="10"
-        android:hint="Last Name"
-        android:inputType="text"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view5" />
-
-    <EditText
-        android:id="@+id/reg_password_et"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="84dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/round_border"
-        android:drawablePadding="16dp"
-        android:ems="10"
-        android:hint="@string/password"
-        android:inputType="textPassword"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reg_name_et" />
-
-    <EditText
         android:id="@+id/reg_client_phone"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="12dp"
@@ -159,13 +118,50 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/reg_name_et" />
 
+    <EditText
+        android:id="@+id/reg_password_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/round_border"
+        android:drawablePadding="16dp"
+        android:ems="10"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reg_name_et" />
+
+
+    <EditText
+        android:id="@+id/reg_pass_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/round_border"
+        android:drawablePadding="16dp"
+        android:ems="10"
+        android:hint="Confirm Password"
+        android:inputType="textPassword"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view5" />
+
 
     <TextView
         android:id="@+id/btn_register"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="@dimen/_40sdp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="92dp"
+        android:layout_marginTop="22dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/bg_btn_shape"
         android:gravity="center"
@@ -173,31 +169,38 @@
         android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:enabled="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/reg_password_et" />
 
-    <CheckBox
-        android:id="@+id/checkBox"
-        android:layout_width="wrap_content"
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="76dp"
-        app:layout_constraintStart_toStartOf="@+id/btn_register"
-        app:layout_constraintTop_toBottomOf="@+id/btn_register" />
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/id_toc"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="108dp"
-        android:text="Terms &amp; condition"
-        app:layout_constraintEnd_toEndOf="@+id/btn_register"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/checkBox"
-        app:layout_constraintTop_toBottomOf="@+id/btn_register" />
+        <CheckBox
+            android:id="@+id/checkBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="76dp"
+            app:layout_constraintStart_toStartOf="@+id/btn_register"
+            app:layout_constraintTop_toBottomOf="@+id/btn_register" />
 
+        <TextView
+            android:id="@+id/id_toc"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="108dp"
+            android:text="Terms &amp; condition"
+            app:layout_constraintEnd_toEndOf="@+id/btn_register"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/checkBox"
+            app:layout_constraintTop_toBottomOf="@+id/btn_register" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+</LinearLayout>

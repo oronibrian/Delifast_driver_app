@@ -986,6 +986,8 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         app.setPassword(pass);
         app.setPhone_no(phone_no);
 
+        onLine(app.getUserid());
+
 //        Request_token(user, pass);
 
         getCurrentLocation();
@@ -1074,9 +1076,10 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
         rider_location = new LatLng(location.getLatitude(), location.getLongitude());
 
         Log.e("rider_location", "rider_location-....." + rider_location);
+        onLine(app.getUserid());
 
 
-        new Handler().postDelayed(new Runnable() {
+        handler.postDelayed(new Runnable() {
             public void run() {
                 // do something...
                 Log.e("update", "updating loc-........");
@@ -1094,7 +1097,7 @@ public class MainActivity extends AppCompatActivity implements LocationUtil.GetL
 
 
             }
-        }, 20000);
+        }, 30000);
 
         float bearing = (float) bearingBetweenLocations(rider_location, rider_location);
 

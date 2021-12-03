@@ -92,7 +92,7 @@ class JoinActivity : AppCompatActivity() {
                     progressDialog!!.dismiss()
 
 
-                    val intent = Intent(this@JoinActivity, LoginActivity::class.java)
+                    val intent = Intent(this@JoinActivity, RiderRegSuccessActivity::class.java)
                     startActivity(intent)
                     finish()
 
